@@ -1,0 +1,98 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+// ==========================================
+// Módulo de Reclutamiento AACOM (Prefijo Rec_)
+// ==========================================
+
+model Rec_User {
+  id                 String   @id @default(uuid())
+  name               String
+  email              String   @unique
+  password           String
+  role               String   @default("RECRUITER") // ADMIN, RECRUITER, CANDIDATE
+  status             String   @default("ACTIVE")    // ACTIVE, SUSPENDED, INACTIVE
+  mustChangePassword Boolean  @default(true)
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+}
+
+model Rec_Candidate {
+  id                    String   @id @default(uuid())
+  fullName              String
+  email                 String
+  phone                 String
+  city                  String
+  hasCar                Boolean  @default(false)
+  financialBufferMonths Int      @default(0)
+  commissionOnly        Boolean  @default(false)
+  salesExperienceYears  Int      @default(0)
+  background            String   // Inmobiliaria, Banca, Autos Premium, Tech B2B, Otro
+  targetUniversity      String?  // Universidad de Prestigio (si aplica)
+  highNetWorthAccess    Boolean  @default(false) // Acceso a mercado alto/contactos de valor
+  notes                 String?  // CV o notas adicionales
+  
+  // Calificación del Semáforo
+  score                 Float    @default(0)
+  status                String   @default("YELLOW") // GREEN, YELLOW, RED
+  reviewStatus          String   @default("PENDING") // PENDING, APPROVED, REJECTED
+  manualReviewReason    String?  // Motivo si cae en amarillo
+  aiAnalysis            String?  // Diagnóstico cualitativo de Gemini AI
+  
+  // Soft-Link a Usuario
+  userId                String?
+  
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+}
+
+model Rec_AIRule {
+  id                String   @id @default(uuid())
+  ruleKey           String   @unique
+  title             String
+  description       String
+  weight            Float    @default(1.0)
+  isMandatory       Boolean  @default(false)
+  minScoreThreshold Float    @default(70.0)
+  category          String   @default("GENERAL") // MANDATORY, BONUS, EXCEPTION
+  isActive          Boolean  @default(true)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+}
+
+model Rec_AIPromptSetting {
+  id               String   @id @default(uuid())
+  systemPrompt     String
+  temperature      Float    @default(0.2)
+  greenThreshold   Float    @default(80.0)
+  yellowThreshold  Float    @default(60.0)
+  modelName        String   @default("gemini-1.5-pro")
+  updatedAt        DateTime @updatedAt
+}
+
+model Rec_IntegrationConfig {
+  id               String   @id @default(uuid())
+  provider         String   @unique // TWILIO, GEMINI
+  accountSid       String?
+  authToken        String?
+  fromPhone        String?
+  adminNotifyPhone String?
+  apiKey           String?
+  isEnabled        Boolean  @default(false)
+  updatedAt        DateTime @updatedAt
+}
+
+model Rec_AuditLog {
+  id                String   @id @default(uuid())
+  action            String
+  performedByUserId String
+  targetId          String?
+  details           String?
+  createdAt         DateTime @default(now())
+}
