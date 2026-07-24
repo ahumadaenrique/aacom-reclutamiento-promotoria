@@ -261,10 +261,10 @@ export const CRMTable: React.FC = () => {
         </div>
       </div>
 
-      {/* MODAL EXPEDIENTE 360° CORREGIDO (Header y Footer Fijos, Cuerpo con Scroll Perfecto) */}
+      {/* MODAL EXPEDIENTE 360° GARANTIZADO (z-[100], pt-20 para jamás solaparse con la barra superior) */}
       {selectedCandidate && (
-        <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-3 sm:p-6 animate-fadeIn">
-          <div className="bg-slate-900 border border-slate-800 rounded-2xl max-w-4xl w-full h-[88vh] max-h-[850px] flex flex-col text-slate-100 shadow-2xl overflow-hidden animate-scaleIn">
+        <div className="fixed inset-0 z-[100] bg-black/90 backdrop-blur-lg flex items-start justify-center pt-20 pb-8 px-4 animate-fadeIn overflow-y-auto">
+          <div className="bg-slate-900 border border-slate-800 rounded-2xl max-w-4xl w-full h-[calc(100vh-7rem)] max-h-[760px] flex flex-col text-slate-100 shadow-2xl overflow-hidden animate-scaleIn">
             
             {/* Header FIJO del Expediente */}
             <div className="px-6 py-4 border-b border-slate-800 bg-slate-950 flex items-center justify-between gap-4 shrink-0">
