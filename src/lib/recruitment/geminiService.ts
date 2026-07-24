@@ -17,9 +17,18 @@ export interface GeminiEvaluationResponse {
   score: number;
   status: 'GREEN' | 'YELLOW' | 'RED';
   summary: string;
+  fitAssessment: string;
+  pillarScores: {
+    financialAutonomy: number;
+    mobilityAndReach: number;
+    commissionMindset: number;
+    consultativeSalesExperience: number;
+    academicAndMarketTier: number;
+  };
   strengths: string[];
   riskAlerts: string[];
   recommendedInterviewQuestions: string[];
+  cvHighlights: string;
 }
 
 export const analyzeCandidateWithGemini = async (
@@ -31,31 +40,45 @@ export const analyzeCandidateWithGemini = async (
   const isGreen = request.hasCar && request.financialBufferMonths >= 3 && request.commissionOnly;
   const isYellow = !request.hasCar && (uniTier !== 'STANDARD' || ['30k-50k', '50k-80k', '>80k'].includes(request.previousIncomeRange));
 
-  const defaultSummary = isGreen
-    ? `Candidato de alto impacto para la Promotoría AACOM. CV verificado con sólida capacidad financiera (${request.financialBufferMonths} meses), movilidad y perfil comisionista en ${request.background}.`
-    : isYellow
-    ? `Candidato calificado para REVISIÓN MANUAL EXCEPCIONAL (Semáforo Amarillo). CV verificado. Resalta por sus ingresos previos (${request.previousIncomeRange}) y formación en ${request.targetUniversity || 'Universidad de Prestigio (Tier 2)'}.`
-    : `Candidato descartado por no cumplir con los requisitos mínimos de autonomía comercial o respaldo financiero.`;
-
   const fallbackResponse: GeminiEvaluationResponse = {
-    score: isGreen ? 92 : isYellow ? 76 : 38,
+    score: isGreen ? 94 : isYellow ? 78 : 38,
     status: isGreen ? 'GREEN' : isYellow ? 'YELLOW' : 'RED',
-    summary: defaultSummary,
+    summary: isGreen
+      ? `Candidato de alto rendimiento para la Promotoría AACOM. Presenta una combinación idónea de autonomía financiera (${request.financialBufferMonths} meses de colchón), vehículo propio para cierres corporativos presenciales e historial consolidado en ${request.background}. Su nivel de ingresos prevíos (${request.previousIncomeRange}) confirma capacidad para negociar pólizas y tickets de alto valor.`
+      : isYellow
+      ? `Candidato calificado para REVISIÓN MANUAL EXCEPCIONAL (Semáforo Amarillo). Aunque no cuenta con automóvil propio en este momento, demuestra un alto potencial de mercado respaldado por su historial de ingresos (${request.previousIncomeRange}) y formación profesional en ${request.targetUniversity || 'Universidad de Prestigio (Tier 2: La Salle / Tec Milenio / UVM)'}.`
+      : `Candidato no recomendado. Presenta brechas en el respaldo financiero inicial (${request.financialBufferMonths} meses) o preferencia por esquemas de sueldo fijo, lo cual contraviene la visión de negocio 100% comisionista de la Promotoría AACOM.`,
+    fitAssessment: isGreen
+      ? 'Ajuste de Negocio Excelente (95% Fit). Perfil altamente automotivado con visión de empresario, acostumbrado a gestionar su propio embudo de ventas sin requerir micromanagement.'
+      : isYellow
+      ? 'Ajuste por Excepción (78% Fit). Requiere definir estrategia de movilidad inicial, pero posee el perfil socioeconómico y el nivel comercial para generar ventas de alto ticket.'
+      : 'Bajo Ajuste (38% Fit). Riesgo de deserción en los primeros 60 días debido a falta de respaldo económico o aversión al riesgo comercial.',
+    pillarScores: {
+      financialAutonomy: Math.min(100, (request.financialBufferMonths / 4) * 100),
+      mobilityAndReach: request.hasCar ? 100 : 50,
+      commissionMindset: request.commissionOnly ? 100 : 20,
+      consultativeSalesExperience: Math.min(100, Math.max(40, request.salesExperienceYears * 20)),
+      academicAndMarketTier: uniTier === 'TIER_1' ? 95 : uniTier === 'TIER_2' ? 85 : 65,
+    },
     strengths: [
-      `Curriculum Vitae analizado y almacenado correctamente`,
-      `Trayectoria en la industria de ${request.background}`,
-      `Nivel de ingresos previos: ${request.previousIncomeRange}`,
-      uniTier !== 'STANDARD' ? `Egresado de Universidad de Prestigio (${request.targetUniversity})` : 'Disposición al esquema de altas comisiones',
+      `Experiencia comercial directa en la industria de ${request.background}`,
+      `Nivel de ingresos previos registrado: ${request.previousIncomeRange} MXN`,
+      request.financialBufferMonths >= 3 ? `Respaldo financiero sólido (${request.financialBufferMonths} meses de autonomía)` : 'Interés manifestado en el modelo comisionista',
+      uniTier !== 'STANDARD' ? `Egresado de Universidad de Prestigio (${request.targetUniversity} - ${uniTier === 'TIER_1' ? 'Tier 1' : 'Tier 2'})` : 'Habilidad en ventas consultivas',
+      request.hasCar ? 'Movilidad inmediata con vehículo propio para visitas a empresas' : 'Mercado objetivo de nivel medio-alto',
     ],
     riskAlerts: [
-      !request.hasCar ? 'No cuenta con automóvil actualmente (Requiere estrategia de movilidad)' : 'Movilidad completa con vehículo propio',
-      request.financialBufferMonths < 3 ? 'Respaldo financiero menor a 3 meses' : 'Finanzas personales preparadas para el arranque',
+      !request.hasCar ? 'CRÍTICO: No posee automóvil actualmente. Se debe validar cómo realizará las visitas presenciales a clientes empresariales.' : 'Movilidad asegurada con auto propio.',
+      request.financialBufferMonths < 3 ? 'RIESGO FINANCIERO: Menos de 3 meses de colchón. Podría presionar por resultados inmediatos antes de consolidar la cartera.' : 'Respaldo financiero adecuado para soportar la curva de arranque.',
+      !request.commissionOnly ? 'RIESGO DE MENTALIDAD: Muestra inclinación por sueldo base. Requiere sensibilización sobre el modelo 100% variable.' : 'Comprensión clara del modelo comisionista sin tope.',
     ],
     recommendedInterviewQuestions: [
-      '¿Cómo fue la transición en tus empleos anteriores hacia la venta consultiva de mayor ticket?',
-      '¿Cuál ha sido la estrategia que mejor te ha funcionado para generar prospección propia?',
-      '¿Cómo organizas tu agenda cuando no tienes supervisión directa de un jefe?',
+      '¿Cuál ha sido la venta de mayor ticket o la póliza/contrato más complejo que has cerrado y cuál fue tu proceso de prospección?',
+      'En tu experiencia previa, ¿cómo estructurabas tu semana laboral entre prospección en frío, citas presenciales y seguimiento?',
+      !request.hasCar ? 'Al no contar con vehículo en este momento, ¿cómo planeas resolver el traslado para citas corporativas en zonas empresariales?' : '¿Cómo manejas los periodos de 3 a 4 semanas sin cierres de ventas sin perder la disciplina operativa?',
+      '¿Qué esperas lograr en términos de facturación mensual en tus primeros 6 meses en la Promotoría AACOM?',
     ],
+    cvHighlights: request.notesOrCvText || `Currículum recibido en formato digital. Experiencia previa en ${request.background} con ${request.salesExperienceYears} años de trayectoria comercial. Nivel de ingresos declarado: ${request.previousIncomeRange}.`,
   };
 
   if (!apiKey || apiKey.includes('mock')) {
@@ -66,26 +89,37 @@ export const analyzeCandidateWithGemini = async (
     const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
 
     const systemPrompt = `
-Eres el Director de Reclutamiento y Selección para la Promotoría AACOM.
-Analiza el perfil y el archivo de CV adjunto del candidato buscando resiliencia, autonomía financiera y perfil comercial.
+Eres el Director de Reclutamiento y Selección de Socios Comerciales para la Promotoría AACOM.
+Tu tarea es realizar un Diagnóstico Ejecutivo 360° del candidato basándote en su CV y datos de postulación.
 
-Reglas clave de Universidad:
-- Tier 1: Tec de Monterrey, ITAM, Anáhuac, Ibero, ITESO, UP, UDLAP, Escuela Libre de Derecho.
-- Tier 2: La Salle, Tec Milenio, UVM (Universidad del Valle de México).
-- Si el candidato egresó de Tier 1 o Tier 2 o tiene ingresos previos >$30k MXN pero NO tiene auto, asígnalo como Semáforo AMARILLO para revisión manual.
+Evalúa los siguientes 5 Pilares (Score 0-100 para cada uno):
+1. financialAutonomy: Autonomía financiera (colchón 3-4 meses).
+2. mobilityAndReach: Movilidad y alcance presencial (auto propio).
+3. commissionMindset: Perfil comisionista y aversión a sueldo fijo.
+4. consultativeSalesExperience: Experiencia en venta consultiva / ticket alto.
+5. academicAndMarketTier: Prestigio académico (Tier 1: Tec/ITAM/Anáhuac/Ibero/ITESO/UP; Tier 2: La Salle/Tec Milenio/UVM) e ingresos previos.
 
-Genera la respuesta estrictamente en JSON:
+Responde estrictamente en JSON con la siguiente estructura:
 {
   "score": número (0-100),
   "status": "GREEN" | "YELLOW" | "RED",
-  "summary": "Resumen cualitativo riguroso derivado del CV y datos del candidato",
-  "strengths": ["fortaleza 1", "fortaleza 2"],
-  "riskAlerts": ["riesgo 1", "riesgo 2"],
-  "recommendedInterviewQuestions": ["pregunta 1", "pregunta 2"]
+  "summary": "Resumen ejecutivo amplio y profesional de 3 a 4 párrafos cortos",
+  "fitAssessment": "Evaluación de ajuste de negocio (Fit %)",
+  "pillarScores": {
+    "financialAutonomy": número,
+    "mobilityAndReach": número,
+    "commissionMindset": número,
+    "consultativeSalesExperience": número,
+    "academicAndMarketTier": número
+  },
+  "strengths": ["fortaleza 1", "fortaleza 2", "fortaleza 3", "fortaleza 4"],
+  "riskAlerts": ["alerta de riesgo 1", "alerta de riesgo 2", "alerta de riesgo 3"],
+  "recommendedInterviewQuestions": ["pregunta 1", "pregunta 2", "pregunta 3", "pregunta 4"],
+  "cvHighlights": "Extracto de los puntos más relevantes descubiertos en el CV"
 }
 `;
 
-    const promptText = `${systemPrompt}\n\nDatos y CV del Candidato:\n${JSON.stringify({ ...request, universityTier: uniTier }, null, 2)}`;
+    const promptText = `${systemPrompt}\n\nDatos del Candidato:\n${JSON.stringify({ ...request, universityTier: uniTier }, null, 2)}`;
 
     const response = await fetch(endpoint, {
       method: 'POST',
@@ -109,9 +143,12 @@ Genera la respuesta estrictamente en JSON:
       score: parsed.score || fallbackResponse.score,
       status: parsed.status || fallbackResponse.status,
       summary: parsed.summary || fallbackResponse.summary,
+      fitAssessment: parsed.fitAssessment || fallbackResponse.fitAssessment,
+      pillarScores: parsed.pillarScores || fallbackResponse.pillarScores,
       strengths: parsed.strengths || fallbackResponse.strengths,
       riskAlerts: parsed.riskAlerts || fallbackResponse.riskAlerts,
       recommendedInterviewQuestions: parsed.recommendedInterviewQuestions || fallbackResponse.recommendedInterviewQuestions,
+      cvHighlights: parsed.cvHighlights || fallbackResponse.cvHighlights,
     };
   } catch (err) {
     console.error('[GEMINI AI SERVICE ERROR]', err);

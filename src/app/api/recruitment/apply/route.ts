@@ -33,7 +33,7 @@ export async function POST(request: Request) {
       notes: body.notes || '',
     });
 
-    // 2. Evaluación Cualitativa con Gemini AI Lector de CV
+    // 2. Evaluación Cualitativa 360° con Gemini AI Lector de CV
     const geminiResult = await analyzeCandidateWithGemini({
       candidateName: body.fullName,
       background: body.background || 'Otra Industria Comercial',
@@ -68,9 +68,12 @@ export async function POST(request: Request) {
       reviewStatus: evaluation.reviewStatus,
       manualReviewReason: evaluation.manualReviewReason,
       aiAnalysis: geminiResult.summary,
+      fitAssessment: geminiResult.fitAssessment,
+      pillarScores: geminiResult.pillarScores,
       strengths: geminiResult.strengths,
       riskAlerts: geminiResult.riskAlerts,
       recommendedInterviewQuestions: geminiResult.recommendedInterviewQuestions,
+      cvHighlights: geminiResult.cvHighlights,
       createdAt: new Date().toISOString(),
     };
 
