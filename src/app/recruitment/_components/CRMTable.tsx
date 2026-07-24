@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { TrafficLightBadge } from './TrafficLightBadge';
 import { Search, Phone, Mail, ShieldAlert, CheckCircle2, XCircle, MessageSquare, RefreshCw, Eye, GraduationCap, FileText, ExternalLink, AlertTriangle, Award, BarChart3, Sparkles, X, ArrowLeft } from 'lucide-react';
 
@@ -10,6 +11,11 @@ export const CRMTable: React.FC = () => {
   const [statusFilter, setStatusFilter] = useState<string>('ALL');
   const [search, setSearch] = useState<string>('');
   const [selectedCandidate, setSelectedCandidate] = useState<any>(null);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const fetchCandidates = async () => {
     setLoading(true);
@@ -261,16 +267,16 @@ export const CRMTable: React.FC = () => {
         </div>
       </div>
 
-      {/* EXPEDIENTE EN PANTALLA COMPLETA 100% (FULL-SCREEN EXECUTIVE PANEL) - IMPOSIBLE DE CORTAR */}
-      {selectedCandidate && (
-        <div className="fixed inset-0 z-[100] bg-slate-950 flex flex-col text-slate-100 animate-fadeIn overflow-hidden">
+      {/* PORTAL A DOCUMENT.BODY: IMPOSIBLE DE ENTRAPAR POR CONTENEDORES PADRE */}
+      {selectedCandidate && mounted && createPortal(
+        <div className="fixed inset-0 w-screen h-screen z-[99999] bg-slate-950 flex flex-col text-slate-100 overflow-hidden">
           
           {/* Header Superior Fijo de la Pantalla Completa */}
-          <div className="px-6 py-4 bg-slate-900 border-b border-slate-800 flex items-center justify-between gap-4 shrink-0 shadow-lg">
+          <div className="px-6 py-4 bg-slate-900 border-b border-slate-800 flex items-center justify-between gap-4 shrink-0 shadow-xl">
             <div className="flex items-center gap-4">
               <button
                 onClick={() => setSelectedCandidate(null)}
-                className="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white transition-all text-xs font-semibold flex items-center gap-1.5"
+                className="px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 hover:text-white transition-all text-xs font-bold flex items-center gap-2 border border-slate-700/60"
               >
                 <ArrowLeft className="h-4 w-4" /> Regresar al CRM
               </button>
@@ -279,7 +285,7 @@ export const CRMTable: React.FC = () => {
 
               <div>
                 <div className="flex items-center gap-3">
-                  <h2 className="text-xl sm:text-2xl font-bold text-white">{selectedCandidate.fullName}</h2>
+                  <h2 className="text-xl sm:text-2xl font-extrabold text-white tracking-tight">{selectedCandidate.fullName}</h2>
                   {selectedCandidate.cvFileUrl && (
                     <a
                       href={selectedCandidate.cvFileUrl}
@@ -301,7 +307,7 @@ export const CRMTable: React.FC = () => {
               <TrafficLightBadge status={selectedCandidate.status} score={selectedCandidate.score} size="lg" />
               <button
                 onClick={() => setSelectedCandidate(null)}
-                className="p-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white transition-colors"
+                className="p-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white transition-colors border border-slate-700/60"
                 title="Cerrar Expediente"
               >
                 <X className="h-6 w-6" />
@@ -309,8 +315,8 @@ export const CRMTable: React.FC = () => {
             </div>
           </div>
 
-          {/* CUERPO DEL EXPEDIENTE (Max-Width 5XL Centrado con Scroll Fluido) */}
-          <div className="flex-1 overflow-y-auto p-6 sm:p-10">
+          {/* CUERPO DEL EXPEDIENTE (Scroll Fluido Completo) */}
+          <div className="flex-1 overflow-y-auto p-6 sm:p-10 bg-slate-950">
             <div className="max-w-5xl mx-auto space-y-8">
               
               {/* Motivo de Excepción Amarillo si aplica */}
@@ -445,7 +451,7 @@ export const CRMTable: React.FC = () => {
                 </div>
               )}
 
-              <div className="h-10" />
+              <div className="h-12" />
             </div>
           </div>
 
@@ -486,14 +492,15 @@ export const CRMTable: React.FC = () => {
 
               <button
                 onClick={() => setSelectedCandidate(null)}
-                className="w-full sm:w-auto px-5 py-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs sm:text-sm font-semibold transition-all"
+                className="w-full sm:w-auto px-5 py-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs sm:text-sm font-semibold transition-all border border-slate-700/60"
               >
                 Cerrar Expediente
               </button>
             </div>
           </div>
 
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );
