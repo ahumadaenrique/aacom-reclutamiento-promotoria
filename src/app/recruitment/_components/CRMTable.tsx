@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { TrafficLightBadge } from './TrafficLightBadge';
-import { Search, Phone, Mail, ShieldAlert, CheckCircle2, XCircle, MessageSquare, RefreshCw, Eye, GraduationCap, DollarSign, Building2 } from 'lucide-react';
+import { Search, Phone, Mail, ShieldAlert, CheckCircle2, XCircle, MessageSquare, RefreshCw, Eye, GraduationCap, FileText, ExternalLink } from 'lucide-react';
 
 export const CRMTable: React.FC = () => {
   const [candidates, setCandidates] = useState<any[]>([]);
@@ -56,7 +56,7 @@ export const CRMTable: React.FC = () => {
   const getWhatsAppLink = (cand: any) => {
     const cleanPhone = cand.phone.replace(/[^0-9]/g, '');
     const message = encodeURIComponent(
-      `¡Hola ${cand.fullName}! Te contactamos de la Promotoría AACOM. Evaluamos tu perfil comercial para la oportunidad de Socio Comercial y tu trayectoria en ${cand.background} nos pareció sumamente interesante. Nos gustaría agendar una breve llamada de entrevista esta semana. ¿Tienes disponibilidad mañana?`
+      `¡Hola ${cand.fullName}! Te contactamos de la Promotoría AACOM. Evaluamos tu CV y tu perfil comercial para la posición de Socio Comercial y tu trayectoria nos pareció excelente. Nos gustaría agendar una llamada de entrevista esta semana. ¿Tienes disponibilidad mañana?`
     );
     return `https://wa.me/${cleanPhone}?text=${message}`;
   };
@@ -127,7 +127,7 @@ export const CRMTable: React.FC = () => {
           <table className="w-full text-left text-xs text-slate-300">
             <thead className="bg-slate-950/80 text-slate-400 uppercase tracking-wider font-semibold border-b border-slate-800">
               <tr>
-                <th className="px-4 py-3.5">Candidato</th>
+                <th className="px-4 py-3.5">Candidato & CV</th>
                 <th className="px-4 py-3.5">Semáforo & Match</th>
                 <th className="px-4 py-3.5">Movilidad & Ingreso Previo</th>
                 <th className="px-4 py-3.5">Industria & Universidad</th>
@@ -156,7 +156,14 @@ export const CRMTable: React.FC = () => {
                     onClick={() => setSelectedCandidate(cand)}
                   >
                     <td className="px-4 py-3.5">
-                      <div className="font-bold text-slate-100 text-sm">{cand.fullName}</div>
+                      <div className="font-bold text-slate-100 text-sm flex items-center gap-1.5">
+                        {cand.fullName}
+                        {cand.cvFileUrl && (
+                          <span className="text-[10px] text-sky-400 bg-sky-500/10 border border-sky-500/20 px-1.5 py-0.5 rounded font-mono flex items-center gap-1">
+                            <FileText className="h-3 w-3" /> CV
+                          </span>
+                        )}
+                      </div>
                       <div className="text-[11px] text-slate-400 flex items-center gap-2 mt-0.5">
                         <span className="flex items-center gap-1">
                           <Mail className="h-3 w-3" /> {cand.email}
@@ -196,6 +203,11 @@ export const CRMTable: React.FC = () => {
                           {cand.universityTier === 'TIER_1' && (
                             <span className="bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 px-1 rounded text-[9px] font-bold">
                               Tier 1
+                            </span>
+                          )}
+                          {cand.universityTier === 'TIER_2' && (
+                            <span className="bg-sky-500/20 text-sky-300 border border-sky-500/30 px-1 rounded text-[9px] font-bold">
+                              Tier 2
                             </span>
                           )}
                         </div>
@@ -255,7 +267,19 @@ export const CRMTable: React.FC = () => {
           <div className="bg-slate-900 border border-slate-800 rounded-2xl max-w-2xl w-full p-6 space-y-6 max-h-[90vh] overflow-y-auto text-slate-100 shadow-2xl animate-scaleIn">
             <div className="flex items-center justify-between border-b border-slate-800 pb-4">
               <div>
-                <h3 className="text-xl font-bold text-white">{selectedCandidate.fullName}</h3>
+                <h3 className="text-xl font-bold text-white flex items-center gap-2">
+                  {selectedCandidate.fullName}
+                  {selectedCandidate.cvFileUrl && (
+                    <a
+                      href={selectedCandidate.cvFileUrl}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="px-2.5 py-1 rounded-lg bg-sky-500/20 text-sky-400 hover:bg-sky-500 hover:text-white border border-sky-500/30 text-xs font-bold transition-all flex items-center gap-1"
+                    >
+                      <FileText className="h-3.5 w-3.5" /> Descargar CV (Vercel Blob) <ExternalLink className="h-3 w-3" />
+                    </a>
+                  )}
+                </h3>
                 <p className="text-xs text-slate-400">{selectedCandidate.email} • {selectedCandidate.phone}</p>
               </div>
               <TrafficLightBadge status={selectedCandidate.status} score={selectedCandidate.score} size="lg" />
@@ -271,9 +295,11 @@ export const CRMTable: React.FC = () => {
               </div>
             )}
 
-            {/* Diagnóstico de IA */}
+            {/* Diagnóstico Cualitativo de IA Gemini */}
             <div className="bg-slate-950 p-4 rounded-xl border border-slate-800 text-xs leading-relaxed space-y-2">
-              <span className="font-bold text-sky-400">Diagnóstico de Inteligencia Artificial (Gemini AI):</span>
+              <span className="font-bold text-sky-400 flex items-center gap-1.5">
+                <FileText className="h-4 w-4 text-sky-400" /> Diagnóstico del Lector de CV de Inteligencia Artificial (Gemini):
+              </span>
               <p className="text-slate-300">{selectedCandidate.aiAnalysis}</p>
             </div>
 
@@ -296,9 +322,9 @@ export const CRMTable: React.FC = () => {
                 <span className="font-bold text-slate-200 truncate block">{selectedCandidate.background}</span>
               </div>
               <div className="bg-slate-950 p-3 rounded-lg border border-slate-800">
-                <span className="text-slate-400 block text-[10px]">Universidad</span>
+                <span className="text-slate-400 block text-[10px]">Universidad & Tier</span>
                 <span className="font-bold text-indigo-300 block truncate">
-                  {selectedCandidate.targetUniversity || 'N/A'}
+                  {selectedCandidate.targetUniversity || 'N/A'} ({selectedCandidate.universityTier || 'Standard'})
                 </span>
               </div>
             </div>

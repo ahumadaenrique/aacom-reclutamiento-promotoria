@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Car, DollarSign, Briefcase, Award, Send, CheckCircle2, Sparkles, Building2 } from 'lucide-react';
+import { Car, DollarSign, Briefcase, Award, Send, CheckCircle2, Sparkles, Building2, UploadCloud, FileText, Check } from 'lucide-react';
 
 const INDUSTRY_OPTIONS = [
   'Asesoría Inmobiliaria Residencial (Medio-Alto)',
@@ -43,14 +43,59 @@ export const JobApplicationForm: React.FC = () => {
     background: 'Banca Patrimonial / Private Banking',
     targetUniversity: '',
     previousIncomeRange: '30k-50k',
+    cvFileUrl: '',
+    cvText: '',
     notes: '',
   });
 
+  const [cvFile, setCvFile] = useState<File | null>(null);
+  const [uploadingCv, setUploadingCv] = useState(false);
+  const [cvUploaded, setCvUploaded] = useState(false);
   const [loading, setLoading] = useState(false);
   const [submitted, setSubmitted] = useState(false);
 
+  const handleCvFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setCvFile(file);
+    setUploadingCv(true);
+
+    try {
+      const data = new FormData();
+      data.append('cvFile', file);
+
+      const res = await fetch('/api/recruitment/upload-cv', {
+        method: 'POST',
+        body: data,
+      });
+
+      const json = await res.json();
+      if (json.success) {
+        setFormData((prev) => ({
+          ...prev,
+          cvFileUrl: json.url,
+          cvText: json.extractedText,
+        }));
+        setCvUploaded(true);
+      } else {
+        alert('Error al subir el CV: ' + json.error);
+      }
+    } catch (err: any) {
+      alert('Error subiendo archivo de CV: ' + err.message);
+    } finally {
+      setUploadingCv(false);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (!formData.cvFileUrl) {
+      alert('Por favor adjunta tu Currículum Vitae (PDF o Word) para poder procesar tu postulación.');
+      return;
+    }
+
     setLoading(true);
 
     try {
@@ -63,6 +108,8 @@ export const JobApplicationForm: React.FC = () => {
       const data = await response.json();
       if (data.success) {
         setSubmitted(true);
+      } else {
+        alert('Error en la postulación: ' + data.error);
       }
     } catch (err: any) {
       alert('Error enviando postulación: ' + err.message);
@@ -132,14 +179,48 @@ export const JobApplicationForm: React.FC = () => {
             </div>
           </div>
 
-          {/* Movilidad & Esquema Comercial (Redacción Amable) */}
+          {/* OBLIGATORIO: Adjuntar Currículum Vitae (PDF o Word) a Vercel Blob Storage */}
+          <div className="bg-slate-950/80 rounded-xl p-5 border border-sky-500/30 space-y-3">
+            <label className="block text-xs font-bold text-sky-400 flex items-center gap-2">
+              <FileText className="h-4 w-4" /> Adjuntar Currículum Vitae (PDF o Word) *Obligatorio
+            </label>
+
+            <div className="border-2 border-dashed border-slate-800 hover:border-sky-500/50 rounded-xl p-4 text-center transition-colors bg-slate-900/50">
+              <input
+                type="file"
+                id="cvUpload"
+                required
+                accept=".pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                onChange={handleCvFileChange}
+                className="hidden"
+              />
+              <label htmlFor="cvUpload" className="cursor-pointer flex flex-col items-center justify-center space-y-2">
+                <div className="h-10 w-10 rounded-full bg-sky-500/10 border border-sky-500/20 flex items-center justify-center text-sky-400">
+                  <UploadCloud className="h-5 w-5" />
+                </div>
+                <div>
+                  <span className="text-xs font-semibold text-sky-400 block">
+                    {uploadingCv
+                      ? 'Subiendo a Vercel Blob Storage...'
+                      : cvUploaded
+                      ? `✅ CV Adjuntado: ${cvFile?.name}`
+                      : 'Haz clic aquí para seleccionar tu CV (.pdf, .doc, .docx)'}
+                  </span>
+                  <span className="text-[11px] text-slate-400 block mt-0.5">
+                    El lector de Inteligencia Artificial Gemini analizará tu trayectoria a partir de este archivo.
+                  </span>
+                </div>
+              </label>
+            </div>
+          </div>
+
+          {/* Movilidad & Esquema Comercial */}
           <div className="bg-slate-950/60 rounded-xl p-4 border border-slate-800/80 space-y-4">
             <h3 className="text-xs font-bold uppercase tracking-wider text-sky-400 flex items-center gap-2">
               <Award className="h-4 w-4" /> Modalidad y Respaldo Operativo
             </h3>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {/* Movilidad (Redacción Amable sin "Requerido") */}
               <div className="bg-slate-900/80 p-3 rounded-lg border border-slate-800">
                 <label className="flex items-center justify-between text-xs font-semibold text-slate-200 cursor-pointer">
                   <span className="flex items-center gap-2">
@@ -158,7 +239,6 @@ export const JobApplicationForm: React.FC = () => {
                 </p>
               </div>
 
-              {/* Esquema 100% Comisionista */}
               <div className="bg-slate-900/80 p-3 rounded-lg border border-slate-800">
                 <label className="flex items-center justify-between text-xs font-semibold text-slate-200 cursor-pointer">
                   <span className="flex items-center gap-2">
@@ -179,7 +259,6 @@ export const JobApplicationForm: React.FC = () => {
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {/* Respaldo Financiero */}
               <div>
                 <label className="block text-xs font-semibold text-slate-300 mb-1">
                   Respaldo financiero para la curva de arranque inicial
@@ -197,7 +276,6 @@ export const JobApplicationForm: React.FC = () => {
                 </select>
               </div>
 
-              {/* Experiencia Comercial */}
               <div>
                 <label className="block text-xs font-semibold text-slate-300 mb-1">
                   Años de experiencia en ventas o gestión comercial
@@ -222,7 +300,6 @@ export const JobApplicationForm: React.FC = () => {
               <Briefcase className="h-4 w-4" /> Historial de Trayectoria Comercial
             </h3>
 
-            {/* Combobox de Industria de Origen con Amplias Opciones */}
             <div>
               <label className="block text-xs font-semibold text-slate-300 mb-1 flex items-center gap-1.5">
                 <Building2 className="h-3.5 w-3.5 text-sky-400" /> Industria Comercial de Origen o Experiencia Principal
@@ -241,7 +318,6 @@ export const JobApplicationForm: React.FC = () => {
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {/* Nivel de Ingreso Mensual Previo (Sustituye la pregunta agresiva de contactos) */}
               <div>
                 <label className="block text-xs font-semibold text-slate-300 mb-1">
                   Último nivel de ingresos mensuales promedio
@@ -259,7 +335,6 @@ export const JobApplicationForm: React.FC = () => {
                 </select>
               </div>
 
-              {/* Universidad de Egreso */}
               <div>
                 <label className="block text-xs font-semibold text-slate-300 mb-1">
                   Universidad de egreso o formación profesional
@@ -268,7 +343,7 @@ export const JobApplicationForm: React.FC = () => {
                   type="text"
                   value={formData.targetUniversity}
                   onChange={(e) => setFormData({ ...formData, targetUniversity: e.target.value })}
-                  placeholder="Ej. Tec de Monterrey, ITAM, Anáhuac, Ibero, UNAM, ITESO..."
+                  placeholder="Ej. Tec de Monterrey, ITAM, Anáhuac, Ibero, La Salle, Tec Milenio, UVM..."
                   className="w-full bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-xs text-slate-100 focus:outline-none focus:border-sky-500"
                 />
               </div>
@@ -283,39 +358,41 @@ export const JobApplicationForm: React.FC = () => {
               rows={3}
               value={formData.notes}
               onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-              placeholder="Comparte tus logros comerciales más relevantes o un extracto de tu currículum..."
+              placeholder="Comparte tus logros comerciales más relevantes..."
               className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-xs text-slate-100 focus:outline-none focus:border-sky-500"
             />
           </div>
 
           <button
             type="submit"
-            disabled={loading}
+            disabled={loading || uploadingCv}
             className="w-full py-3.5 px-6 rounded-xl bg-gradient-to-r from-sky-500 to-indigo-600 hover:from-sky-400 hover:to-indigo-500 text-white font-bold text-sm shadow-xl shadow-sky-500/25 flex items-center justify-center gap-2 transition-all disabled:opacity-50"
           >
             {loading ? (
               <div className="h-5 w-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
             ) : (
               <>
-                <Send className="h-4 w-4" /> Enviar Postulación a la Promotoría
+                <Send className="h-4 w-4" /> Enviar Postulación con CV Adjunto
               </>
             )}
           </button>
         </form>
       ) : (
-        /* Confirmación Amable para el Candidato (Sin revelar calificaciones ni semáforos) */
+        /* Confirmación Amable */
         <div className="py-12 text-center space-y-4 animate-fadeIn">
           <div className="h-16 w-16 bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 rounded-full flex items-center justify-center mx-auto">
             <CheckCircle2 className="h-8 w-8" />
           </div>
-          <h3 className="text-2xl font-bold text-white">¡Postulación Recibida con Éxito!</h3>
+          <h3 className="text-2xl font-bold text-white">¡Postulación y CV Recibidos con Éxito!</h3>
           <p className="text-slate-300 text-sm max-w-lg mx-auto leading-relaxed">
-            Gracias por tu interés en sumarte como Socio Comercial. En breve, un consultor de la **Promotoría AACOM** revisará tu perfil y se pondrá en contacto contigo a través de WhatsApp o correo electrónico.
+            Gracias por tu interés en sumarte como Socio Comercial. Tu archivo de CV fue almacenado y procesado por nuestro motor de inteligencia artificial. En breve, un consultor de la **Promotoría AACOM** se pondrá en contacto contigo.
           </p>
           <div className="pt-4">
             <button
               onClick={() => {
                 setSubmitted(false);
+                setCvUploaded(false);
+                setCvFile(null);
                 setFormData({
                   fullName: '',
                   email: '',
@@ -328,6 +405,8 @@ export const JobApplicationForm: React.FC = () => {
                   background: 'Banca Patrimonial / Private Banking',
                   targetUniversity: '',
                   previousIncomeRange: '30k-50k',
+                  cvFileUrl: '',
+                  cvText: '',
                   notes: '',
                 });
               }}

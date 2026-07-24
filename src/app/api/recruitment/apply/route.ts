@@ -8,6 +8,13 @@ export async function POST(request: Request) {
   try {
     const body = await request.json();
 
+    if (!body.cvFileUrl) {
+      return NextResponse.json(
+        { success: false, error: 'Es obligatorio adjuntar tu Currículum Vitae (PDF o Word) para continuar.' },
+        { status: 400 }
+      );
+    }
+
     // 1. Evaluación con el Motor de Negocio AACOM
     const evaluation = evaluateCandidate({
       fullName: body.fullName,
@@ -21,10 +28,12 @@ export async function POST(request: Request) {
       background: body.background || 'Otra Industria Comercial',
       targetUniversity: body.targetUniversity || '',
       previousIncomeRange: body.previousIncomeRange || '30k-50k',
+      cvFileUrl: body.cvFileUrl,
+      cvText: body.cvText || '',
       notes: body.notes || '',
     });
 
-    // 2. Evaluación Cualitativa con Gemini AI
+    // 2. Evaluación Cualitativa con Gemini AI Lector de CV
     const geminiResult = await analyzeCandidateWithGemini({
       candidateName: body.fullName,
       background: body.background || 'Otra Industria Comercial',
@@ -34,7 +43,8 @@ export async function POST(request: Request) {
       salesExperienceYears: Number(body.salesExperienceYears),
       targetUniversity: body.targetUniversity,
       previousIncomeRange: body.previousIncomeRange || '30k-50k',
-      notesOrCvText: body.notes,
+      cvFileUrl: body.cvFileUrl,
+      notesOrCvText: body.cvText || body.notes,
     });
 
     const candidateRecord = {
@@ -51,6 +61,7 @@ export async function POST(request: Request) {
       targetUniversity: body.targetUniversity || '',
       universityTier: evaluation.universityTier,
       previousIncomeRange: body.previousIncomeRange || '30k-50k',
+      cvFileUrl: body.cvFileUrl,
       notes: body.notes || '',
       score: evaluation.score,
       status: evaluation.status,

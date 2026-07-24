@@ -10,6 +10,8 @@ export interface CandidateSubmission {
   background: string;
   targetUniversity?: string;
   previousIncomeRange: string; // '<15k', '15k-30k', '30k-50k', '50k-80k', '>80k'
+  cvFileUrl?: string;
+  cvText?: string;
   notes?: string;
 }
 
@@ -29,14 +31,14 @@ export interface EvaluationResult {
   aiRecommendation: string;
 }
 
-// Clasificación de Universidades de Prestigio (Tiers)
+// Clasificación de Universidades por Tiers
 const TIER_1_UNIVERSITIES = [
   'tec de monterrey', 'itesm', 'itam', 'anahuac', 'anáhuac', 'ibero', 
   'iberoamericana', 'iteso', 'panamericana', 'up', 'udla', 'udlap', 'escuela libre de derecho'
 ];
 
 const TIER_2_UNIVERSITIES = [
-  'unam', 'ipn', 'uam', 'uanl', 'udg', 'udeg', 'tec milenio', 'la salle'
+  'la salle', 'lasalle', 'tec milenio', 'tecmilenio', 'uvm', 'universidad del valle de mexico', 'universidad del valle de méxico'
 ];
 
 export const getUniversityTier = (university?: string): 'TIER_1' | 'TIER_2' | 'STANDARD' => {
@@ -69,7 +71,7 @@ export const evaluateCandidate = (data: CandidateSubmission): EvaluationResult =
     yellowReason += `Respaldo financiero de ${data.financialBufferMonths} meses (se recomiendan 3 a 4 meses). `;
   }
 
-  // 3. Evaluador de Ingreso Previo (Sustituye la pregunta directa de contactos HNW)
+  // 3. Evaluador de Ingreso Previo
   let incomeScore = 10;
   const highIncomeRanges = ['30k-50k', '50k-80k', '>80k'];
   const isHighPreviousIncome = highIncomeRanges.includes(data.previousIncomeRange);
@@ -92,7 +94,7 @@ export const evaluateCandidate = (data: CandidateSubmission): EvaluationResult =
     if (hasPrestigeUniversity || isHighPreviousIncome || hasHighExperience) {
       isYellowException = true;
       const exceptionTriggers = [];
-      if (hasPrestigeUniversity) exceptionTriggers.push(`Universidad de Prestigio (${uniTier === 'TIER_1' ? 'Tier 1' : 'Tier 2'}: ${data.targetUniversity})`);
+      if (hasPrestigeUniversity) exceptionTriggers.push(`Universidad de Prestigio (${uniTier === 'TIER_1' ? 'Tier 1' : 'Tier 2 (La Salle / Tec Milenio / UVM)'}: ${data.targetUniversity})`);
       if (isHighPreviousIncome) exceptionTriggers.push(`Historial de Ingresos Alto (${data.previousIncomeRange})`);
       if (hasHighExperience) exceptionTriggers.push(`Experiencia Comercial Consolidada (${data.salesExperienceYears} años)`);
 

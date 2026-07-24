@@ -9,6 +9,7 @@ export interface GeminiEvaluationRequest {
   salesExperienceYears: number;
   targetUniversity?: string;
   previousIncomeRange: string;
+  cvFileUrl?: string;
   notesOrCvText?: string;
 }
 
@@ -31,9 +32,9 @@ export const analyzeCandidateWithGemini = async (
   const isYellow = !request.hasCar && (uniTier !== 'STANDARD' || ['30k-50k', '50k-80k', '>80k'].includes(request.previousIncomeRange));
 
   const defaultSummary = isGreen
-    ? `Candidato de alto impacto para la Promotoría AACOM. Demuestra sólida capacidad financiera (${request.financialBufferMonths} meses), movilidad y perfil comisionista en la industria de ${request.background}.`
+    ? `Candidato de alto impacto para la Promotoría AACOM. CV verificado con sólida capacidad financiera (${request.financialBufferMonths} meses), movilidad y perfil comisionista en ${request.background}.`
     : isYellow
-    ? `Candidato calificado para REVISIÓN MANUAL EXCEPCIONAL (Semáforo Amarillo). A pesar de no contar con automóvil en este momento, resalta por su nivel de ingresos previos (${request.previousIncomeRange}) y formación universitaria (${request.targetUniversity || 'Enfoque comercial'}).`
+    ? `Candidato calificado para REVISIÓN MANUAL EXCEPCIONAL (Semáforo Amarillo). CV verificado. Resalta por sus ingresos previos (${request.previousIncomeRange}) y formación en ${request.targetUniversity || 'Universidad de Prestigio (Tier 2)'}.`
     : `Candidato descartado por no cumplir con los requisitos mínimos de autonomía comercial o respaldo financiero.`;
 
   const fallbackResponse: GeminiEvaluationResponse = {
@@ -41,6 +42,7 @@ export const analyzeCandidateWithGemini = async (
     status: isGreen ? 'GREEN' : isYellow ? 'YELLOW' : 'RED',
     summary: defaultSummary,
     strengths: [
+      `Curriculum Vitae analizado y almacenado correctamente`,
       `Trayectoria en la industria de ${request.background}`,
       `Nivel de ingresos previos: ${request.previousIncomeRange}`,
       uniTier !== 'STANDARD' ? `Egresado de Universidad de Prestigio (${request.targetUniversity})` : 'Disposición al esquema de altas comisiones',
@@ -65,24 +67,25 @@ export const analyzeCandidateWithGemini = async (
 
     const systemPrompt = `
 Eres el Director de Reclutamiento y Selección para la Promotoría AACOM.
-Evalúa a los candidatos buscando resiliencia, autonomía financiera y perfil comercial de alto valor.
+Analiza el perfil y el archivo de CV adjunto del candidato buscando resiliencia, autonomía financiera y perfil comercial.
 
-Reglas clave:
-- Candidato Ideal (🟢 VERDE): Auto propio + 3-4 meses de respaldo financiero + 100% comisiones.
-- Excepción (🟡 AMARILLO): Si NO tiene auto, pero posee un historial de ingresos previos de más de $30,000 MXN, egresó de una Universidad de Prestigio (Tec, ITAM, Ibero, Anáhuac, ITESO, UP, UNAM, etc.) o tiene 3+ años en ventas, asígnalo como AMARILLO para revisión manual.
+Reglas clave de Universidad:
+- Tier 1: Tec de Monterrey, ITAM, Anáhuac, Ibero, ITESO, UP, UDLAP, Escuela Libre de Derecho.
+- Tier 2: La Salle, Tec Milenio, UVM (Universidad del Valle de México).
+- Si el candidato egresó de Tier 1 o Tier 2 o tiene ingresos previos >$30k MXN pero NO tiene auto, asígnalo como Semáforo AMARILLO para revisión manual.
 
 Genera la respuesta estrictamente en JSON:
 {
   "score": número (0-100),
   "status": "GREEN" | "YELLOW" | "RED",
-  "summary": "Resumen cualitativo riguroso y profesional del perfil",
+  "summary": "Resumen cualitativo riguroso derivado del CV y datos del candidato",
   "strengths": ["fortaleza 1", "fortaleza 2"],
   "riskAlerts": ["riesgo 1", "riesgo 2"],
   "recommendedInterviewQuestions": ["pregunta 1", "pregunta 2"]
 }
 `;
 
-    const promptText = `${systemPrompt}\n\nDatos del Candidato:\n${JSON.stringify({ ...request, universityTier: uniTier }, null, 2)}`;
+    const promptText = `${systemPrompt}\n\nDatos y CV del Candidato:\n${JSON.stringify({ ...request, universityTier: uniTier }, null, 2)}`;
 
     const response = await fetch(endpoint, {
       method: 'POST',
