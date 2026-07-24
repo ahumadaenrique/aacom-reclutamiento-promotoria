@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { TrafficLightBadge } from './TrafficLightBadge';
-import { Search, Phone, Mail, Car, ShieldAlert, CheckCircle2, XCircle, MessageSquare, ExternalLink, RefreshCw, Eye } from 'lucide-react';
+import { Search, Phone, Mail, ShieldAlert, CheckCircle2, XCircle, MessageSquare, RefreshCw, Eye, GraduationCap, DollarSign, Building2 } from 'lucide-react';
 
 export const CRMTable: React.FC = () => {
   const [candidates, setCandidates] = useState<any[]>([]);
@@ -56,14 +56,14 @@ export const CRMTable: React.FC = () => {
   const getWhatsAppLink = (cand: any) => {
     const cleanPhone = cand.phone.replace(/[^0-9]/g, '');
     const message = encodeURIComponent(
-      `¡Hola ${cand.fullName}! Hablamos de la Promotoría AACOM. Evaluamos tu perfil para la posición de Socio Comercial y nos llamó mucho la atención tu trayectoria. Nos gustaría agendar una breve entrevista inicial esta semana. ¿Tienes disponibilidad mañana?`
+      `¡Hola ${cand.fullName}! Te contactamos de la Promotoría AACOM. Evaluamos tu perfil comercial para la oportunidad de Socio Comercial y tu trayectoria en ${cand.background} nos pareció sumamente interesante. Nos gustaría agendar una breve llamada de entrevista esta semana. ¿Tienes disponibilidad mañana?`
     );
     return `https://wa.me/${cleanPhone}?text=${message}`;
   };
 
   return (
     <div className="space-y-6">
-      {/* Barra de Búsqueda y Filtros de Semáforo */}
+      {/* Filtros y Búsqueda */}
       <div className="flex flex-col sm:flex-row items-center justify-between gap-4 bg-slate-900/90 p-4 rounded-xl border border-slate-800 backdrop-blur-md">
         <div className="relative w-full sm:w-80">
           <Search className="absolute left-3 top-2.5 h-4 w-4 text-slate-400" />
@@ -71,7 +71,7 @@ export const CRMTable: React.FC = () => {
             type="text"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Buscar candidato por nombre, email, teléfono o background..."
+            placeholder="Buscar candidato, email, universidad..."
             className="w-full bg-slate-950 border border-slate-800 rounded-lg pl-9 pr-3 py-2 text-xs text-slate-100 focus:outline-none focus:border-sky-500"
           />
         </div>
@@ -129,8 +129,8 @@ export const CRMTable: React.FC = () => {
               <tr>
                 <th className="px-4 py-3.5">Candidato</th>
                 <th className="px-4 py-3.5">Semáforo & Match</th>
-                <th className="px-4 py-3.5">Auto & Respaldo</th>
-                <th className="px-4 py-3.5">Background</th>
+                <th className="px-4 py-3.5">Movilidad & Ingreso Previo</th>
+                <th className="px-4 py-3.5">Industria & Universidad</th>
                 <th className="px-4 py-3.5">Estado Revisión</th>
                 <th className="px-4 py-3.5 text-right">Acción 1-Clic</th>
               </tr>
@@ -172,28 +172,33 @@ export const CRMTable: React.FC = () => {
                     </td>
 
                     <td className="px-4 py-3.5">
-                      <div className="flex items-center gap-1.5">
-                        <span
-                          className={`px-2 py-0.5 rounded text-[10px] font-bold ${
-                            cand.hasCar
-                              ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
-                              : 'bg-amber-500/10 text-amber-400 border border-amber-500/20'
-                          }`}
-                        >
+                      <div className="flex flex-col gap-1">
+                        <span className="flex items-center gap-1.5 text-slate-200">
                           {cand.hasCar ? '🚗 Con Auto' : '🚶 Sin Auto'}
+                          <span className="text-[10px] text-slate-400">({cand.financialBufferMonths}m Colchón)</span>
                         </span>
-                        <span className="text-[11px] text-slate-400">
-                          {cand.financialBufferMonths}m Colchón
-                        </span>
+                        {cand.previousIncomeRange && (
+                          <span className="text-[10px] text-emerald-400 font-mono">
+                            Ingreso: {cand.previousIncomeRange} MXN
+                          </span>
+                        )}
                       </div>
                     </td>
 
-                    <td className="px-4 py-3.5 font-medium text-slate-200">
-                      {cand.background}
-                      {cand.highNetWorthAccess && (
-                        <span className="ml-1 text-[10px] bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 px-1.5 py-0.5 rounded">
-                          HNW
-                        </span>
+                    <td className="px-4 py-3.5">
+                      <div className="font-medium text-slate-200 truncate max-w-[200px]" title={cand.background}>
+                        {cand.background}
+                      </div>
+                      {cand.targetUniversity && (
+                        <div className="flex items-center gap-1 text-[10px] text-indigo-300 mt-0.5">
+                          <GraduationCap className="h-3 w-3 text-indigo-400" />
+                          <span className="truncate max-w-[160px]">{cand.targetUniversity}</span>
+                          {cand.universityTier === 'TIER_1' && (
+                            <span className="bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 px-1 rounded text-[9px] font-bold">
+                              Tier 1
+                            </span>
+                          )}
+                        </div>
                       )}
                     </td>
 
@@ -217,7 +222,6 @@ export const CRMTable: React.FC = () => {
 
                     <td className="px-4 py-3.5 text-right" onClick={(e) => e.stopPropagation()}>
                       <div className="flex items-center justify-end gap-2">
-                        {/* Botón WhatsApp 1-Clic */}
                         <a
                           href={getWhatsAppLink(cand)}
                           target="_blank"
@@ -245,7 +249,7 @@ export const CRMTable: React.FC = () => {
         </div>
       </div>
 
-      {/* Modal / Drawer Expediente del Candidato */}
+      {/* Modal Expediente del Candidato */}
       {selectedCandidate && (
         <div className="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm flex items-center justify-center p-4">
           <div className="bg-slate-900 border border-slate-800 rounded-2xl max-w-2xl w-full p-6 space-y-6 max-h-[90vh] overflow-y-auto text-slate-100 shadow-2xl animate-scaleIn">
@@ -261,7 +265,7 @@ export const CRMTable: React.FC = () => {
             {selectedCandidate.manualReviewReason && (
               <div className="p-4 bg-amber-500/10 border border-amber-500/30 rounded-xl text-xs text-amber-200">
                 <span className="font-bold flex items-center gap-1 text-amber-400 mb-1">
-                  <ShieldAlert className="h-4 w-4" /> Detalle de Revisión Manual (Excepción Amarillo):
+                  <ShieldAlert className="h-4 w-4" /> Detalle de Revisión Manual (Semáforo Amarillo):
                 </span>
                 {selectedCandidate.manualReviewReason}
               </div>
@@ -269,7 +273,7 @@ export const CRMTable: React.FC = () => {
 
             {/* Diagnóstico de IA */}
             <div className="bg-slate-950 p-4 rounded-xl border border-slate-800 text-xs leading-relaxed space-y-2">
-              <span className="font-bold text-sky-400">Diagnóstico de Inteligencia Artificial:</span>
+              <span className="font-bold text-sky-400">Diagnóstico de Inteligencia Artificial (Gemini AI):</span>
               <p className="text-slate-300">{selectedCandidate.aiAnalysis}</p>
             </div>
 
@@ -277,32 +281,24 @@ export const CRMTable: React.FC = () => {
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 text-xs">
               <div className="bg-slate-950 p-3 rounded-lg border border-slate-800">
                 <span className="text-slate-400 block text-[10px]">Vehículo Propio</span>
-                <span className="font-bold text-slate-200">
-                  {selectedCandidate.hasCar ? '✅ Sí' : '❌ No'}
-                </span>
+                <span className="font-bold text-slate-200">{selectedCandidate.hasCar ? '✅ Con Auto' : '🚶 Sin Auto'}</span>
               </div>
               <div className="bg-slate-950 p-3 rounded-lg border border-slate-800">
                 <span className="text-slate-400 block text-[10px]">Respaldo Financiero</span>
                 <span className="font-bold text-slate-200">{selectedCandidate.financialBufferMonths} Meses</span>
               </div>
               <div className="bg-slate-950 p-3 rounded-lg border border-slate-800">
-                <span className="text-slate-400 block text-[10px]">100% Comisionista</span>
-                <span className="font-bold text-slate-200">
-                  {selectedCandidate.commissionOnly ? '✅ Acepta' : '❌ No Acepta'}
-                </span>
+                <span className="text-slate-400 block text-[10px]">Ingreso Previo</span>
+                <span className="font-bold text-emerald-400">{selectedCandidate.previousIncomeRange || 'N/A'} MXN</span>
               </div>
-              <div className="bg-slate-950 p-3 rounded-lg border border-slate-800">
-                <span className="text-slate-400 block text-[10px]">Background</span>
-                <span className="font-bold text-slate-200">{selectedCandidate.background}</span>
+              <div className="bg-slate-950 p-3 rounded-lg border border-slate-800 col-span-2">
+                <span className="text-slate-400 block text-[10px]">Industria de Origen</span>
+                <span className="font-bold text-slate-200 truncate block">{selectedCandidate.background}</span>
               </div>
               <div className="bg-slate-950 p-3 rounded-lg border border-slate-800">
                 <span className="text-slate-400 block text-[10px]">Universidad</span>
-                <span className="font-bold text-slate-200">{selectedCandidate.targetUniversity || 'N/A'}</span>
-              </div>
-              <div className="bg-slate-950 p-3 rounded-lg border border-slate-800">
-                <span className="text-slate-400 block text-[10px]">Mercado Alto HNW</span>
-                <span className="font-bold text-slate-200">
-                  {selectedCandidate.highNetWorthAccess ? '✅ Sí' : '❌ No'}
+                <span className="font-bold text-indigo-300 block truncate">
+                  {selectedCandidate.targetUniversity || 'N/A'}
                 </span>
               </div>
             </div>

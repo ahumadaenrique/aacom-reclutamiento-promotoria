@@ -9,7 +9,7 @@ export interface CandidateSubmission {
   salesExperienceYears: number;
   background: string;
   targetUniversity?: string;
-  highNetWorthAccess: boolean;
+  previousIncomeRange: string; // '<15k', '15k-30k', '30k-50k', '50k-80k', '>80k'
   notes?: string;
 }
 
@@ -18,15 +18,35 @@ export interface EvaluationResult {
   status: 'GREEN' | 'YELLOW' | 'RED';
   reviewStatus: 'PENDING' | 'APPROVED' | 'REJECTED';
   manualReviewReason?: string;
+  universityTier: 'TIER_1' | 'TIER_2' | 'STANDARD';
   breakdown: {
     financialScore: number;
     mobilityScore: number;
     mindsetScore: number;
     backgroundScore: number;
-    capitalSocialScore: number;
+    incomeScore: number;
   };
   aiRecommendation: string;
 }
+
+// Clasificación de Universidades de Prestigio (Tiers)
+const TIER_1_UNIVERSITIES = [
+  'tec de monterrey', 'itesm', 'itam', 'anahuac', 'anáhuac', 'ibero', 
+  'iberoamericana', 'iteso', 'panamericana', 'up', 'udla', 'udlap', 'escuela libre de derecho'
+];
+
+const TIER_2_UNIVERSITIES = [
+  'unam', 'ipn', 'uam', 'uanl', 'udg', 'udeg', 'tec milenio', 'la salle'
+];
+
+export const getUniversityTier = (university?: string): 'TIER_1' | 'TIER_2' | 'STANDARD' => {
+  if (!university || university.trim().length < 2) return 'STANDARD';
+  const term = university.toLowerCase();
+  
+  if (TIER_1_UNIVERSITIES.some(u => term.includes(u))) return 'TIER_1';
+  if (TIER_2_UNIVERSITIES.some(u => term.includes(u))) return 'TIER_2';
+  return 'STANDARD';
+};
 
 export const evaluateCandidate = (data: CandidateSubmission): EvaluationResult => {
   let score = 0;
@@ -34,71 +54,71 @@ export const evaluateCandidate = (data: CandidateSubmission): EvaluationResult =
   let isYellowException = false;
   let yellowReason = '';
 
-  // 1. Filtro Innegociable: Aversión al sueldo fijo (Debe aceptar 100% variable)
+  const uniTier = getUniversityTier(data.targetUniversity);
+
+  // 1. Filtro de Modelo de Ingresos (Comisionista)
   if (!data.commissionOnly) {
     isRed = true;
-    yellowReason += 'Buscando sueldo fijo. El modelo AACOM requiere visión 100% comisionista. ';
+    yellowReason += 'Perfil prefiere sueldo fijo. El modelo AACOM es 100% comisiones sin tope. ';
   }
 
-  // 2. Filtro Innegociable: Respaldo financiero (Mínimo 3 meses)
+  // 2. Respaldo Financiero (Mínimo 3 meses)
   const financialScore = Math.min(30, (data.financialBufferMonths / 4) * 30);
   if (data.financialBufferMonths < 3) {
     isRed = true;
-    yellowReason += `Respaldo financiero insuficiente (${data.financialBufferMonths} meses vs 3-4 requeridos). `;
+    yellowReason += `Respaldo financiero de ${data.financialBufferMonths} meses (se recomiendan 3 a 4 meses). `;
   }
 
-  // 3. Movilidad y la Regla Excepcional del Semáforo Amarillo
+  // 3. Evaluador de Ingreso Previo (Sustituye la pregunta directa de contactos HNW)
+  let incomeScore = 10;
+  const highIncomeRanges = ['30k-50k', '50k-80k', '>80k'];
+  const isHighPreviousIncome = highIncomeRanges.includes(data.previousIncomeRange);
+  
+  if (data.previousIncomeRange === '>80k') incomeScore = 20;
+  else if (data.previousIncomeRange === '50k-80k') incomeScore = 18;
+  else if (data.previousIncomeRange === '30k-50k') incomeScore = 15;
+  else if (data.previousIncomeRange === '15k-30k') incomeScore = 12;
+
+  // 4. Movilidad y Regla de Semáforo Amarillo por Tiers y Alto Ingreso
   let mobilityScore = 0;
   if (data.hasCar) {
     mobilityScore = 25;
   } else {
-    // Evaluación de Excepción para Semáforo Amarillo:
-    // No tiene auto, PERO tiene mercado alto (HNW) O viene de universidad de prestigio O alta experiencia en ventas consultivas (3+ años)
-    const isPrestigeUniversity = Boolean(
-      data.targetUniversity && data.targetUniversity.trim().length > 2
-    );
-    const hasHighValueMarket = data.highNetWorthAccess;
+    // Si NO tiene auto, evaluar Excepción para Semáforo Amarillo:
+    // Criterios compensatorios: Universidad Tier 1 / Tier 2 OR Ingreso Previo Alto (> $30k MXN) OR 3+ años en ventas consultivas
+    const hasPrestigeUniversity = uniTier === 'TIER_1' || uniTier === 'TIER_2';
     const hasHighExperience = data.salesExperienceYears >= 3;
 
-    if (hasHighValueMarket || isPrestigeUniversity || hasHighExperience) {
+    if (hasPrestigeUniversity || isHighPreviousIncome || hasHighExperience) {
       isYellowException = true;
       const exceptionTriggers = [];
-      if (hasHighValueMarket) exceptionTriggers.push('Acceso a Mercado Alto / Contactos de Alto Valor');
-      if (isPrestigeUniversity) exceptionTriggers.push(`Universidad de Prestigio (${data.targetUniversity})`);
-      if (hasHighExperience) exceptionTriggers.push(`Experiencia Consolidada (${data.salesExperienceYears} años)`);
+      if (hasPrestigeUniversity) exceptionTriggers.push(`Universidad de Prestigio (${uniTier === 'TIER_1' ? 'Tier 1' : 'Tier 2'}: ${data.targetUniversity})`);
+      if (isHighPreviousIncome) exceptionTriggers.push(`Historial de Ingresos Alto (${data.previousIncomeRange})`);
+      if (hasHighExperience) exceptionTriggers.push(`Experiencia Comercial Consolidada (${data.salesExperienceYears} años)`);
 
-      yellowReason = `REVISIÓN MANUAL RECOMENDADA: El candidato no tiene auto propio actualmente, pero califica por EXCEPCIÓN debido a: ${exceptionTriggers.join(', ')}.`;
-      mobilityScore = 15; // Puntaje parcial por potencial
+      yellowReason = `REVISIÓN MANUAL EXCEPCIONAL (Semáforo Amarillo): El candidato no cuenta con vehículo propio en este momento, pero califica por alto potencial debido a: ${exceptionTriggers.join(', ')}.`;
+      mobilityScore = 15;
     } else {
       isRed = true;
-      yellowReason += 'Sin vehículo propio y sin factores compensatorios de mercado alto/red de contactos. ';
+      yellowReason += 'Sin vehículo propio y sin factores de excepción (universidad de prestigio o ingresos previos altos). ';
     }
   }
 
-  // 4. Background profesional relevante (Inmobiliario, Banca, Autos Premium, Tech B2B)
+  // 5. Background Profesional Relevante
   let backgroundScore = 15;
-  const relevantBackgrounds = ['Inmobiliaria', 'Banca', 'Autos Premium', 'Tech B2B'];
-  if (relevantBackgrounds.includes(data.background)) {
-    backgroundScore = 25;
-  }
+  if (data.background) backgroundScore = 25;
 
-  // 5. Capital Social / Red de Contactos
-  let capitalSocialScore = 10;
-  if (data.highNetWorthAccess) {
-    capitalSocialScore = 20;
-  }
+  // Cálculo del Score Total (0 - 100)
+  score = Math.round(financialScore + mobilityScore + backgroundScore + incomeScore);
 
-  // Cálculo de Score Total (0 - 100)
-  score = Math.round(financialScore + mobilityScore + backgroundScore + capitalSocialScore);
-
-  // Determinación final del Semáforo
+  // Determinación del Semáforo
   let status: 'GREEN' | 'YELLOW' | 'RED' = 'GREEN';
   let reviewStatus: 'PENDING' | 'APPROVED' | 'REJECTED' = 'PENDING';
 
   if (isRed) {
     status = 'RED';
     reviewStatus = 'REJECTED';
-    if (!yellowReason) yellowReason = 'No cumple con los requisitos indispensables de autonomía y perfil comercial AACOM.';
+    if (!yellowReason) yellowReason = 'No cumple con los requisitos indispensables de autonomía comercial o respaldo financiero.';
   } else if (isYellowException || score < 80) {
     status = 'YELLOW';
     reviewStatus = 'PENDING';
@@ -107,27 +127,24 @@ export const evaluateCandidate = (data: CandidateSubmission): EvaluationResult =
     reviewStatus = 'APPROVED';
   }
 
-  // Generación de diagnóstico preliminar
-  let aiRecommendation = '';
-  if (status === 'GREEN') {
-    aiRecommendation = `🟢 CANDIDATO IDEAL (Score: ${score}%): Cumple el 100% de los Filtros de Hierro. Posee auto, colchón de ${data.financialBufferMonths} meses, perfil emprendedor y background relevante en ${data.background}. Se recomienda agendar entrevista inmediatamente.`;
-  } else if (status === 'YELLOW') {
-    aiRecommendation = `🟡 REVISIÓN MANUAL (Score: ${score}%): ${yellowReason}`;
-  } else {
-    aiRecommendation = `🔴 CANDIDATO DESCARTADO (Score: ${score}%): ${yellowReason}`;
-  }
+  const aiRecommendation = status === 'GREEN'
+    ? `🟢 CANDIDATO IDEAL (Score: ${score}%): Excelente compatibilidad. Posee vehículo, respaldo financiero de ${data.financialBufferMonths} meses, ingresos previos de ${data.previousIncomeRange} e historial en ${data.background}.`
+    : status === 'YELLOW'
+    ? `🟡 REVISIÓN MANUAL RECOMENDADA (Score: ${score}%): ${yellowReason}`
+    : `🔴 CANDIDATO DESCARTADO (Score: ${score}%): ${yellowReason}`;
 
   return {
     score,
     status,
     reviewStatus,
     manualReviewReason: status === 'YELLOW' ? yellowReason : undefined,
+    universityTier: uniTier,
     breakdown: {
       financialScore,
       mobilityScore,
       mindsetScore: data.commissionOnly ? 20 : 0,
       backgroundScore,
-      capitalSocialScore,
+      incomeScore,
     },
     aiRecommendation,
   };

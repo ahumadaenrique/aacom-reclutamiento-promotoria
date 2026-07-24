@@ -18,22 +18,22 @@ export async function POST(request: Request) {
       financialBufferMonths: Number(body.financialBufferMonths || 0),
       commissionOnly: Boolean(body.commissionOnly),
       salesExperienceYears: Number(body.salesExperienceYears || 0),
-      background: body.background || 'Otro',
+      background: body.background || 'Otra Industria Comercial',
       targetUniversity: body.targetUniversity || '',
-      highNetWorthAccess: Boolean(body.highNetWorthAccess),
+      previousIncomeRange: body.previousIncomeRange || '30k-50k',
       notes: body.notes || '',
     });
 
     // 2. Evaluación Cualitativa con Gemini AI
     const geminiResult = await analyzeCandidateWithGemini({
       candidateName: body.fullName,
-      background: body.background,
+      background: body.background || 'Otra Industria Comercial',
       hasCar: Boolean(body.hasCar),
       financialBufferMonths: Number(body.financialBufferMonths),
       commissionOnly: Boolean(body.commissionOnly),
       salesExperienceYears: Number(body.salesExperienceYears),
       targetUniversity: body.targetUniversity,
-      highNetWorthAccess: Boolean(body.highNetWorthAccess),
+      previousIncomeRange: body.previousIncomeRange || '30k-50k',
       notesOrCvText: body.notes,
     });
 
@@ -47,9 +47,10 @@ export async function POST(request: Request) {
       financialBufferMonths: Number(body.financialBufferMonths),
       commissionOnly: Boolean(body.commissionOnly),
       salesExperienceYears: Number(body.salesExperienceYears),
-      background: body.background || 'Otro',
+      background: body.background || 'Otra Industria Comercial',
       targetUniversity: body.targetUniversity || '',
-      highNetWorthAccess: Boolean(body.highNetWorthAccess),
+      universityTier: evaluation.universityTier,
+      previousIncomeRange: body.previousIncomeRange || '30k-50k',
       notes: body.notes || '',
       score: evaluation.score,
       status: evaluation.status,
@@ -62,10 +63,10 @@ export async function POST(request: Request) {
       createdAt: new Date().toISOString(),
     };
 
-    // Guardar en la base de datos simulada
+    // Guardar candidato en el CRM
     mockCandidatesDb.unshift(candidateRecord);
 
-    // 3. Notificación SMS vía Twilio si el candidato es Verde 🟢 o Amarillo 🟡
+    // 3. Notificación SMS simulada (Modo Pruebas sin costo)
     if (evaluation.status === 'GREEN' || evaluation.status === 'YELLOW') {
       await sendCandidateNotificationSMS({
         toPhone: body.phone,
@@ -78,9 +79,10 @@ export async function POST(request: Request) {
 
     return NextResponse.json({
       success: true,
-      data: candidateRecord,
-      evaluation,
-      geminiResult,
+      data: {
+        id: candidateRecord.id,
+        fullName: candidateRecord.fullName,
+      },
     });
   } catch (error: any) {
     console.error('[APPLY API ERROR]', error);
