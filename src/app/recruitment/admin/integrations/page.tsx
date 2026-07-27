@@ -1,9 +1,9 @@
-import { IntegrationsForm } from '../../_components/IntegrationsForm';
+import { IntegrationsConfig } from '../../_components/IntegrationsConfig';
 
 export default function IntegrationsPage() {
   return (
     <div className="py-4">
-      <IntegrationsForm />
+      <IntegrationsConfig />
     </div>
   );
 }
