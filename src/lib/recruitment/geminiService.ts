@@ -44,7 +44,7 @@ export const analyzeCandidateWithGemini = async (
     score: isGreen ? 94 : isYellow ? 78 : 38,
     status: isGreen ? 'GREEN' : isYellow ? 'YELLOW' : 'RED',
     summary: isGreen
-      ? `Candidato de alto rendimiento para la Promotoría AACOM. Presenta una combinación idónea de autonomía financiera (${request.financialBufferMonths} meses de colchón), vehículo propio para cierres corporativos presenciales e historial consolidado en ${request.background}. Su nivel de ingresos prevíos (${request.previousIncomeRange}) confirma capacidad para negociar pólizas y tickets de alto valor.`
+      ? `Candidato de alto rendimiento para la Promotoría AACOM. Presenta una combinación idónea de autonomía financiera (${request.financialBufferMonths} meses de colchón), vehículo propio para cierres corporativos presenciales e historial consolidado en ${request.background}. Su nivel de ingresos previos (${request.previousIncomeRange}) confirma capacidad para negociar pólizas y tickets de alto valor.`
       : isYellow
       ? `Candidato calificado para REVISIÓN MANUAL EXCEPCIONAL (Semáforo Amarillo). Aunque no cuenta con automóvil propio en este momento, demuestra un alto potencial de mercado respaldado por su historial de ingresos (${request.previousIncomeRange}) y formación profesional en ${request.targetUniversity || 'Universidad de Prestigio (Tier 2: La Salle / Tec Milenio / UVM)'}.`
       : `Candidato no recomendado. Presenta brechas en el respaldo financiero inicial (${request.financialBufferMonths} meses) o preferencia por esquemas de sueldo fijo, lo cual contraviene la visión de negocio 100% comisionista de la Promotoría AACOM.`,
@@ -86,7 +86,9 @@ export const analyzeCandidateWithGemini = async (
   }
 
   try {
-    const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
+    // Modelo Futureproof: Utilizando gemini-1.5-flash-latest para actualización automática continua de Google DeepMind
+    const modelName = process.env.GEMINI_MODEL || 'gemini-1.5-flash-latest';
+    const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${apiKey}`;
 
     const systemPrompt = `
 Eres el Director de Reclutamiento y Selección de Socios Comerciales para la Promotoría AACOM.

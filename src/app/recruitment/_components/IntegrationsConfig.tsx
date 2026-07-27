@@ -80,7 +80,7 @@ export const IntegrationsConfig: React.FC = () => {
 
       const data = await res.json();
       if (data.success) {
-        alert(`✅ Simulación de Webhook ${provider.toUpperCase()} exitosa. El candidato "${payload.applicantName || payload.name}" fue ingresado al CRM y evaluado por el Agente Screener.`);
+        alert(`✅ Simulación de Webhook ${provider.toUpperCase()} exitosa. El candidato "${payload.applicantName || payload.name}" fue ingresado al CRM y evaluado por el Agente Screener (Gemini Flash-Latest).`);
       }
     } catch (err: any) {
       alert('Error probando webhook: ' + err.message);
@@ -261,9 +261,11 @@ export const IntegrationsConfig: React.FC = () => {
         <div className="bg-slate-900/90 border border-slate-800 rounded-2xl p-6 space-y-4 shadow-xl backdrop-blur-xl">
           <div className="flex items-center justify-between border-b border-slate-800 pb-3">
             <div className="flex items-center gap-2 text-purple-400 font-bold text-sm">
-              <Sparkles className="h-5 w-5" /> Gemini AI Service Key (Motor de Evaluación 360°)
+              <Sparkles className="h-5 w-5" /> Gemini AI Service Key (Motor Futureproof 360°)
             </div>
-            <span className="text-[10px] text-slate-400 font-mono">Modelo: gemini-1.5-flash</span>
+            <span className="text-[10px] text-emerald-400 font-mono font-bold bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20">
+              gemini-1.5-flash-latest
+            </span>
           </div>
 
           <div>
