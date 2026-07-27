@@ -130,4 +130,18 @@ export let mockIntegrationsDb = {
     model: 'gemini-1.5-flash',
     isEnabled: true,
   },
+  linkedin: {
+    clientId: process.env.LINKEDIN_CLIENT_ID || '78_mock_linkedin_client_id',
+    clientSecret: process.env.LINKEDIN_CLIENT_SECRET ? '••••••••••••••••' : 'mock_linkedin_secret_xyz',
+    organizationId: process.env.LINKEDIN_ORG_ID || 'aacom-promotoria-org',
+    webhookUrl: 'https://aacom-reclutamiento-promotoria.vercel.app/api/recruitment/webhooks/linkedin',
+    isEnabled: true,
+  },
+  occ: {
+    apiKey: process.env.OCC_API_KEY || 'occ_mock_api_key_456',
+    secretKey: process.env.OCC_SECRET_KEY ? '••••••••••••••••' : 'mock_occ_secret_789',
+    employerId: process.env.OCC_EMPLOYER_ID || 'emp_aacom_99',
+    webhookUrl: 'https://aacom-reclutamiento-promotoria.vercel.app/api/recruitment/webhooks/occ',
+    isEnabled: true,
+  },
 };
