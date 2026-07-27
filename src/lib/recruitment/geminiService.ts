@@ -79,7 +79,7 @@ export const analyzeCandidateWithGemini = async (
       !request.hasCar ? 'Al no contar con vehículo en este momento, ¿cómo planeas resolver el traslado para citas corporativas en zonas empresariales?' : '¿Cómo manejas los periodos de 3 a 4 semanas sin cierres de ventas sin perder la disciplina operativa?',
       '¿Qué esperas lograr en términos de facturación mensual en tus primeros 6 meses en la Promotoría AACOM?',
     ],
-    cvHighlights: request.notesOrCvText || `Currículum recibido en formato digital. Experiencia previa en ${request.background} con ${request.salesExperienceYears} años de trayectoria comercial. Nivel de ingresos declared: ${request.previousIncomeRange}.`,
+    cvHighlights: request.notesOrCvText || `Currículum recibido en formato digital. Experiencia previa en ${request.background} con ${request.salesExperienceYears} años de trayectoria comercial. Nivel de ingresos declarado: ${request.previousIncomeRange}.`,
   };
 
   if (!apiKey || apiKey.includes('mock')) {
@@ -87,7 +87,11 @@ export const analyzeCandidateWithGemini = async (
   }
 
   try {
-    const modelName = request.selectedModel || process.env.GEMINI_MODEL || 'gemini-1.5-flash-latest';
+    let modelName = request.selectedModel || process.env.GEMINI_MODEL || 'gemini-3.6-flash';
+    if (modelName === 'gemini-3.6-flash' || modelName === 'gemini-3.5-flash') {
+      modelName = 'gemini-1.5-flash-latest';
+    }
+
     const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${apiKey}`;
 
     const systemPrompt = `
@@ -101,7 +105,7 @@ Evalúa los siguientes 5 Pilares (Score 0-100 para cada uno):
 4. consultativeSalesExperience: Experiencia en venta consultiva / ticket alto.
 5. academicAndMarketTier: Prestigio académico (Tier 1: Tec/ITAM/Anáhuac/Ibero/ITESO/UP; Tier 2: La Salle/Tec Milenio/UVM) e ingresos previos.
 
-Responde strictly en JSON con la siguiente estructura:
+Responde estrictamente en JSON con la siguiente estructura:
 {
   "score": número (0-100),
   "status": "GREEN" | "YELLOW" | "RED",

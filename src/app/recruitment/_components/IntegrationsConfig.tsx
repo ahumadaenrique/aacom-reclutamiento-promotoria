@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { MessageSquare, Sparkles, Key, Save, CheckCircle2, ShieldCheck, RefreshCw, Send, Globe, Link as LinkIcon, Building2, Briefcase } from 'lucide-react';
+import { MessageSquare, Sparkles, Key, Save, CheckCircle2, ShieldCheck, RefreshCw, Send, Globe, Link as LinkIcon, Building2, Briefcase, Cpu } from 'lucide-react';
 
 export const IntegrationsConfig: React.FC = () => {
   const [integrations, setIntegrations] = useState<any>(null);
@@ -80,7 +80,7 @@ export const IntegrationsConfig: React.FC = () => {
 
       const data = await res.json();
       if (data.success) {
-        alert(`✅ Simulación de Webhook ${provider.toUpperCase()} exitosa. El candidato "${payload.applicantName || payload.name}" fue ingresado al CRM y evaluado por el Agente Screener (Gemini Flash-Latest).`);
+        alert(`✅ Simulación de Webhook ${provider.toUpperCase()} exitosa. El candidato "${payload.applicantName || payload.name}" fue ingresado al CRM y evaluado por el Agente Screener.`);
       }
     } catch (err: any) {
       alert('Error probando webhook: ' + err.message);
@@ -257,30 +257,53 @@ export const IntegrationsConfig: React.FC = () => {
           </div>
         </div>
 
-        {/* 3. Gemini AI Configuration Card */}
+        {/* 3. Gemini / Multi-Model AI Selector Card */}
         <div className="bg-slate-900/90 border border-slate-800 rounded-2xl p-6 space-y-4 shadow-xl backdrop-blur-xl">
           <div className="flex items-center justify-between border-b border-slate-800 pb-3">
             <div className="flex items-center gap-2 text-purple-400 font-bold text-sm">
-              <Sparkles className="h-5 w-5" /> Gemini AI Service Key (Motor Futureproof 360°)
+              <Sparkles className="h-5 w-5" /> Selector de Modelo de Inteligencia Artificial (Engine Selector)
             </div>
             <span className="text-[10px] text-emerald-400 font-mono font-bold bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20">
-              gemini-1.5-flash-latest
+              Futureproof Multi-LLM
             </span>
           </div>
 
-          <div>
-            <label className="block text-xs font-semibold text-slate-300 mb-1">Gemini API Key</label>
-            <input
-              type="password"
-              value={integrations?.gemini?.apiKey || ''}
-              onChange={(e) =>
-                setIntegrations({
-                  ...integrations,
-                  gemini: { ...integrations.gemini, apiKey: e.target.value },
-                })
-              }
-              className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-xs text-slate-100 font-mono focus:outline-none focus:border-purple-500"
-            />
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
+            <div>
+              <label className="block text-xs font-semibold text-slate-300 mb-1">Gemini / AI API Key</label>
+              <input
+                type="password"
+                value={integrations?.gemini?.apiKey || ''}
+                onChange={(e) =>
+                  setIntegrations({
+                    ...integrations,
+                    gemini: { ...integrations.gemini, apiKey: e.target.value },
+                  })
+                }
+                className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-xs text-slate-100 font-mono focus:outline-none focus:border-purple-500"
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-semibold text-slate-300 mb-1">Modelo de IA Seleccionado</label>
+              <select
+                value={integrations?.gemini?.model || 'gemini-3.6-flash'}
+                onChange={(e) =>
+                  setIntegrations({
+                    ...integrations,
+                    gemini: { ...integrations.gemini, model: e.target.value },
+                  })
+                }
+                className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-xs text-slate-100 focus:outline-none focus:border-purple-500 font-mono"
+              >
+                <option value="gemini-3.6-flash">Gemini 3.6 Flash (High) - Rápido & Ultra-preciso (Recomendado)</option>
+                <option value="gemini-3.5-flash">Gemini 3.5 Flash (Medium)</option>
+                <option value="gemini-2.0-flash">Gemini 2.0 Flash (Next-Gen)</option>
+                <option value="gemini-1.5-flash-latest">Gemini 1.5 Flash (Estándar)</option>
+                <option value="gemini-1.5-pro-latest">Gemini 1.5 Pro (Razonamiento Complejo)</option>
+                <option value="claude-3-5-sonnet">Claude Sonnet 3.5 / 4.6 (Thinking)</option>
+              </select>
+            </div>
           </div>
 
           <div className="flex justify-end">
@@ -289,7 +312,7 @@ export const IntegrationsConfig: React.FC = () => {
               disabled={saving}
               className="px-4 py-2 rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs flex items-center gap-1.5 transition-colors"
             >
-              <Save className="h-3.5 w-3.5" /> Guardar Llave Gemini AI
+              <Save className="h-3.5 w-3.5" /> Guardar Modelo de IA Seleccionado
             </button>
           </div>
         </div>
