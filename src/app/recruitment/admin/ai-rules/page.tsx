@@ -1,9 +1,5 @@
-import { AIRulesEditor } from '../../_components/AIRulesEditor';
+import { AgencyAgentsDashboard } from '../../_components/AgencyAgentsDashboard';
 
 export default function AIRulesPage() {
-  return (
-    <div className="py-4">
-      <AIRulesEditor />
-    </div>
-  );
+  return <AgencyAgentsDashboard />;
 }
