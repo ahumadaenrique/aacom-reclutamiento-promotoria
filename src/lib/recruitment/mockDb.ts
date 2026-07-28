@@ -18,8 +18,20 @@ export let mockCandidatesDb: any[] = [
     score: 95,
     status: 'GREEN',
     reviewStatus: 'APPROVED',
+    etapaActual: 4, // Etapa 4: Primera Cita (Agendado en Calendly)
+    agenteExperimentado: true,
+    popTestScore: 'Alto Perfil Comercial (96/100)',
+    proyecto200Url: 'https://aacom-blob-storage.public.blob.vercel-storage.com/proyectos200/proyecto200_enrique.xlsx',
+    documentosEstado: {
+      identificacion: true,
+      estudios: true,
+      domicilio: true,
+      fiscal: true,
+      rfc: true,
+      curp: true,
+    },
     aiAnalysis: 'Candidato de alto impacto y rendimiento para la Promotoría AACOM. Presenta una combinación idónea de autonomía financiera (4 meses de colchón), vehículo propio para cierres corporativos e historial consolidado en Banca Patrimonial. Su nivel de ingresos previos de $50k-$80k MXN confirma su madurez para negociar pólizas empresariales de alto valor.',
-    fitAssessment: 'Ajuste de Negocio Excelente (96% Fit). Perfil altamente automotivado con visión de empresario, acostumbrado a gestionar su propio embudo de ventas de ticket alto sin requerir supervisión.',
+    fitAssessment: 'Ajuste de Negocio Excelente (96% Fit). Perfil highly automotivado con visión de empresario, acostumbrado a gestionar su propio embudo de ventas de ticket alto sin requerir supervisión.',
     pillarScores: {
       financialAutonomy: 100,
       mobilityAndReach: 100,
@@ -66,6 +78,18 @@ export let mockCandidatesDb: any[] = [
     score: 78,
     status: 'YELLOW',
     reviewStatus: 'PENDING',
+    etapaActual: 3, // Etapa 3: Prueba POP
+    agenteExperimentado: false,
+    popTestScore: 'Pendiente de Completar',
+    proyecto200Url: null,
+    documentosEstado: {
+      identificacion: true,
+      estudios: true,
+      domicilio: false,
+      fiscal: false,
+      rfc: true,
+      curp: true,
+    },
     manualReviewReason: 'REVISIÓN MANUAL EXCEPCIONAL (Semáforo Amarillo): El candidato no cuenta con vehículo propio en este momento, pero califica por alto potencial debido a: Universidad de Prestigio (Tier 1: ITESO), Historial de Ingresos Alto (30k-50k).',
     aiAnalysis: 'Candidato calificado para REVISIÓN MANUAL EXCEPCIONAL (Semáforo Amarillo). A pesar de no contar con automóvil propio en este momento, demuestra un alto potencial de mercado respaldado por su historial de ingresos ($30k-$50k MXN) y formación profesional en ITESO (Tier 1).',
     fitAssessment: 'Ajuste por Excepción (78% Fit). Requiere definir estrategia de movilidad inicial para visitas, pero posee el perfil socioeconómico y el nivel comercial para generar ventas de alto ticket.',
@@ -127,7 +151,7 @@ export let mockIntegrationsDb = {
   },
   gemini: {
     apiKey: process.env.GEMINI_API_KEY ? '••••••••••••••••' : 'AIzaSy_mock_gemini_key_789',
-    model: 'gemini-1.5-flash',
+    model: 'gemini-3.6-flash',
     isEnabled: true,
   },
   linkedin: {
