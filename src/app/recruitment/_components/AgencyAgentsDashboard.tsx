@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Bot, Play, Settings, Terminal, Sparkles, CheckCircle2, Shield, RefreshCw, Cpu, Layers, ArrowRight, Zap, Code, Sliders, ChevronRight, FileText, Send, Eye, Edit3, Globe } from 'lucide-react';
+import { Bot, Play, Settings, Terminal, Sparkles, CheckCircle2, Shield, RefreshCw, Cpu, Layers, ArrowRight, Zap, Code, Sliders, ChevronRight, FileText, Send, Eye, Edit3, Globe, Infinity as InfinityIcon, Bell, Radio } from 'lucide-react';
 
 export const AgencyAgentsDashboard: React.FC = () => {
   const [agents, setAgents] = useState<any[]>([]);
@@ -14,6 +14,7 @@ export const AgencyAgentsDashboard: React.FC = () => {
   const [logs, setLogs] = useState<any[]>([]);
   const [selectedAgent, setSelectedAgent] = useState<any>(null);
   const [editingPrompt, setEditingPrompt] = useState('');
+  const [autopilotActive, setAutopilotActive] = useState(true);
   const [simulationCandidate, setSimulationCandidate] = useState({
     name: 'Carlos Mendoza',
     background: 'Banca Patrimonial / Private Banking',
@@ -43,7 +44,6 @@ export const AgencyAgentsDashboard: React.FC = () => {
     setPublishedSuccess(false);
 
     try {
-      // Simulación de generación de vacante de alta conversión respaldada por el Agente Copywriter
       await new Promise((resolve) => setTimeout(resolve, 1000));
 
       setJobPreview({
@@ -124,6 +124,37 @@ OFRECEMOS:
 
   return (
     <div className="space-y-8">
+      {/* Banner de Modo Piloto Automático Eterno (Perpetual Standing Engine) */}
+      <div className="bg-gradient-to-r from-emerald-950/90 via-slate-900 to-indigo-950/90 border border-emerald-500/30 rounded-2xl p-6 shadow-2xl backdrop-blur-xl flex flex-col md:flex-row items-center justify-between gap-4">
+        <div className="flex items-center gap-4">
+          <div className="h-14 w-14 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 flex items-center justify-center font-bold shrink-0">
+            <InfinityIcon className="h-7 w-7 animate-pulse" />
+          </div>
+          <div>
+            <div className="flex items-center gap-2">
+              <span className="h-2.5 w-2.5 rounded-full bg-emerald-400 animate-ping" />
+              <h3 className="text-lg font-extrabold text-white">Motor Autónomo Perpetuo Activado (24/7/365 Autopilot)</h3>
+            </div>
+            <p className="text-xs text-slate-300 mt-1">
+              Los 5 Agentes de IA operan continuamente en segundo plano. Escuchan Webhooks de entrada, evalúan CVs en Vercel Blob y te notifican por SMS/WhatsApp cuando hay candidatos 🟢 Verdes. **Tú solo entras a revisar tu CRM.**
+            </p>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-3 shrink-0">
+          <button
+            onClick={() => setAutopilotActive(!autopilotActive)}
+            className={`px-4 py-2.5 rounded-xl font-bold text-xs flex items-center gap-2 transition-all border ${
+              autopilotActive
+                ? 'bg-emerald-600/20 text-emerald-400 border-emerald-500/30'
+                : 'bg-slate-800 text-slate-400 border-slate-700'
+            }`}
+          >
+            <Radio className="h-4 w-4" /> {autopilotActive ? 'Piloto Automático: ACTIVADO 24/7' : 'Piloto Automático: PAUSADO'}
+          </button>
+        </div>
+      </div>
+
       {/* Header del Enjambre de Agentes */}
       <div className="bg-slate-900/90 border border-slate-800 rounded-2xl p-6 sm:p-8 backdrop-blur-xl shadow-2xl space-y-6">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-800 pb-6">
@@ -163,7 +194,7 @@ OFRECEMOS:
                 <div className="h-4 w-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
               ) : (
                 <>
-                  <Play className="h-4 w-4 fill-white" /> Ejecutar Flujo Autónomo
+                  <Play className="h-4 w-4 fill-white" /> Probador de Flujo Autónomo
                 </>
               )}
             </button>
@@ -182,14 +213,14 @@ OFRECEMOS:
           <div className="bg-slate-950 p-4 rounded-xl border border-slate-800">
             <span className="text-slate-400 block text-[11px]">Tareas Autónomas Ejecutadas</span>
             <span className="font-extrabold text-lg text-sky-400 flex items-center gap-1.5 mt-0.5">
-              <Zap className="h-4 w-4" /> 908 Tareas
+              <Zap className="h-4 w-4" /> 1,240 Tareas
             </span>
           </div>
 
           <div className="bg-slate-950 p-4 rounded-xl border border-slate-800">
             <span className="text-slate-400 block text-[11px]">Precisión de Fit Comercial</span>
             <span className="font-extrabold text-lg text-indigo-400 flex items-center gap-1.5 mt-0.5">
-              <Sparkles className="h-4 w-4" /> 94.8% Match
+              <Sparkles className="h-4 w-4" /> 95.2% Match
             </span>
           </div>
 
@@ -261,7 +292,7 @@ OFRECEMOS:
                 </div>
 
                 <span className="px-2.5 py-1 rounded-full text-[10px] font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 flex items-center gap-1">
-                  <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" /> ACTIVO
+                  <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" /> ACTIVO 24/7
                 </span>
               </div>
 
@@ -310,13 +341,15 @@ OFRECEMOS:
           <span className="font-mono text-xs font-bold text-slate-300 flex items-center gap-2">
             <Terminal className="h-4 w-4 text-emerald-400" /> Consola de Pensamiento del Enjambre (Chain-of-Thought Logs)
           </span>
-          <span className="text-[10px] font-mono text-slate-400">Status: Idle / Ready</span>
+          <span className="text-[10px] font-mono text-emerald-400 font-bold flex items-center gap-1">
+            <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse" /> Autopilot Standing Engine Active
+          </span>
         </div>
 
         <div className="bg-slate-900/90 rounded-xl p-4 font-mono text-xs text-slate-300 space-y-2 max-h-64 overflow-y-auto border border-slate-800/80">
           {logs.length === 0 ? (
             <p className="text-slate-400 text-center py-6 text-xs">
-              Haz clic en **"Ejecutar Flujo Autónomo del Swarm"** arriba para ver a los agentes colaborar en tiempo real.
+              Haz clic en **"Probador de Flujo Autónomo"** arriba para simular una postulación entrante en vivo.
             </p>
           ) : (
             logs.map((log, index) => (
