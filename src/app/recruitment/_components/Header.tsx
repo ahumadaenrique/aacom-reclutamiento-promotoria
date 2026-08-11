@@ -3,7 +3,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Shield, Users, Cpu, Key, FileText, UserCheck, LayoutDashboard } from 'lucide-react';
+import { Shield, Users, Cpu, Key, FileText, UserCheck, LayoutDashboard, Lock } from 'lucide-react';
 
 interface HeaderProps {
   currentRole: 'ADMIN' | 'RECRUITER' | 'CANDIDATE';
@@ -24,10 +24,10 @@ export const Header: React.FC<HeaderProps> = ({ currentRole, onRoleChange, userN
   ];
 
   return (
-    <header className="sticky top-0 z-50 bg-slate-950/80 backdrop-blur-md border-b border-slate-800 text-slate-100">
+    <header className="sticky top-0 z-50 bg-slate-950/90 backdrop-blur-md border-b border-slate-800 text-slate-100 shadow-xl">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
-          {/* Logo & Marca */}
+          {/* Logo & Marca Corporativa */}
           <div className="flex items-center gap-3">
             <div className="h-10 w-10 rounded-xl bg-gradient-to-tr from-sky-500 to-indigo-600 flex items-center justify-center shadow-lg shadow-sky-500/20">
               <Shield className="h-6 w-6 text-white" />
@@ -35,12 +35,12 @@ export const Header: React.FC<HeaderProps> = ({ currentRole, onRoleChange, userN
             <div>
               <span className="font-bold text-lg tracking-tight text-white">AACOM</span>
               <span className="text-xs ml-2 px-2 py-0.5 rounded-full bg-sky-500/10 text-sky-400 border border-sky-500/20 font-medium">
-                Recruitment Autopilot
+                Promotoría Reclutamiento
               </span>
             </div>
           </div>
 
-          {/* Navegación Principal */}
+          {/* Navegación Principal Filtrada por Rol */}
           <nav className="hidden md:flex items-center gap-1">
             {navItems
               .filter((item) => item.roles.includes(currentRole))
@@ -67,7 +67,9 @@ export const Header: React.FC<HeaderProps> = ({ currentRole, onRoleChange, userN
           {/* Selector de Rol y Perfil */}
           <div className="flex items-center gap-3">
             <div className="flex items-center bg-slate-900 border border-slate-800 rounded-lg p-1 text-xs">
-              <span className="text-slate-400 px-2 font-mono text-[10px] uppercase">Simular Rol:</span>
+              <span className="text-slate-400 px-2 font-mono text-[10px] uppercase flex items-center gap-1">
+                <Lock className="h-3 w-3 text-sky-400" /> Rol:
+              </span>
               <button
                 onClick={() => onRoleChange('ADMIN')}
                 className={`px-2 py-1 rounded text-xs font-medium transition-colors ${
