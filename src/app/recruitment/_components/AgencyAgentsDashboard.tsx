@@ -10,7 +10,7 @@ export const AgencyAgentsDashboard: React.FC = () => {
   const [generatingJob, setGeneratingJob] = useState(false);
   const [jobPreview, setJobPreview] = useState<any>(null);
   const [publishing, setPublishing] = useState(false);
-  const [publishedSuccess, setPublishedSuccess] = useState(false);
+  const [publishedSuccess, setPublishedSuccess] = useState<boolean | string>(false);
   const [logs, setLogs] = useState<any[]>([]);
   const [selectedAgent, setSelectedAgent] = useState<any>(null);
   const [editingPrompt, setEditingPrompt] = useState('');
@@ -90,7 +90,7 @@ OFRECEMOS:
 
       const data = await res.json();
       if (data.success) {
-        setPublishedSuccess(true);
+        setPublishedSuccess(data.message);
       } else {
         alert('Error al publicar: ' + data.error);
       }
@@ -403,8 +403,8 @@ OFRECEMOS:
               <div className="p-6 bg-emerald-500/10 border border-emerald-500/30 rounded-2xl text-center space-y-3">
                 <CheckCircle2 className="h-12 w-12 text-emerald-400 mx-auto" />
                 <h4 className="text-lg font-bold text-white">¡Vacante Publicada Exitosamente!</h4>
-                <p className="text-xs text-slate-300 max-w-md mx-auto leading-relaxed">
-                  La vacante ha sido enviada e integrada en vivo a la API oficial de **LinkedIn Jobs** y **OCC Mundial**. El Webhook de Ingestión Automática procesará las solicitudes entrantes en tiempo real.
+                <p className="text-sm font-bold text-emerald-300 max-w-md mx-auto leading-relaxed">
+                  {typeof publishedSuccess === 'string' ? publishedSuccess : 'La vacante ha sido enviada a LinkedIn.'}
                 </p>
                 <button
                   onClick={() => setJobPreview(null)}
