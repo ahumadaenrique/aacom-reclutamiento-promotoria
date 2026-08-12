@@ -60,11 +60,16 @@ export async function POST(request: Request) {
           const resData = await response.json();
           apiStatusMessage = `¡Publicación exitosa en el muro de LinkedIn! ID Post: ${resData.id || 'OK'}`;
         } else {
-          console.warn('[LINKEDIN POST WARNING]', response.statusText);
+          const errData = await response.text();
+          console.error('[LINKEDIN POST ERROR]', errData);
+          return NextResponse.json({ success: false, error: `Error de LinkedIn API: ${response.status} - ${errData}` }, { status: 400 });
         }
       } catch (err: any) {
-        console.warn('[LINKEDIN API POST EXCEPTION]', err.message);
+        console.error('[LINKEDIN API POST EXCEPTION]', err.message);
+        return NextResponse.json({ success: false, error: err.message }, { status: 500 });
       }
+    } else {
+      return NextResponse.json({ success: false, error: "Client Secret no configurado correctamente en Vercel." }, { status: 400 });
     }
 
     return NextResponse.json({
