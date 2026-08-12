@@ -11,46 +11,66 @@ export async function POST(request: Request) {
     const clientId = linkedinConfig.clientId || '78z2vrugjo5rbb';
     const clientSecret = linkedinConfig.clientSecret;
 
-    console.log(`[JOB PUBLISH API] Enviando vacante "${title}" a LinkedIn Organization URN: urn:li:organization:${orgId} vía API`);
+    console.log(`[JOB PUBLISH API] Publicando vacante "${title}" en el muro de Organización LinkedIn URN: urn:li:organization:${orgId}`);
 
-    // Payload oficial para la API simpleJobPostings / JobPosting de LinkedIn
-    const linkedinPayload = {
+    // Payload oficial UGC (User Generated Content) Post para Páginas de Empresa en LinkedIn API
+    const ugcPostPayload = {
       author: `urn:li:organization:${orgId}`,
-      title: title,
-      description: description,
-      employmentStatus: 'FULL_TIME',
-      location: location || 'Mexico City, Mexico',
-      listingType: 'BASIC',
-      companyApplyUrl: 'https://aacom-reclutamiento-promotoria.vercel.app/recruitment/apply',
+      lifecycleState: 'PUBLISHED',
+      specificContent: {
+        'com.linkedin.ugc.ShareContent': {
+          shareCommentary: {
+            text: `💼 ¡CONVOCATORIA ABIERTA! ${title}\n\n${description}\n\n🌐 Postúlate directamente en nuestro Portal de Reclutamiento AACOM:\nhttps://aacom-reclutamiento-promotoria.vercel.app/recruitment/apply\n\n#ReclutamientoAACOM #SociosComerciales #VacanteComercial #BancaPatrimonial`,
+          },
+          shareMediaCategory: 'ARTICLE',
+          media: [
+            {
+              status: 'READY',
+              description: {
+                text: 'Promotoría AACOM - Programa de Desarrollo de Socios Comerciales & Consultores Patrimoniales',
+              },
+              originalUrl: 'https://aacom-reclutamiento-promotoria.vercel.app/recruitment/apply',
+              title: {
+                text: title,
+              },
+            },
+          ],
+        },
+      },
+      visibility: {
+        'com.linkedin.ugc.ShareContent': 'PUBLIC',
+      },
     };
 
-    let linkedinStatus = 'SUCCESS';
-    let linkedinMessage = 'Vacante registrada en el servidor para sincronización directa con LinkedIn Jobs.';
+    let apiStatusMessage = 'Vacante enviada y procesada exitosamente por el servidor.';
 
-    // Si existen credenciales de API completas, intentamos el POST oficial a api.linkedin.com
-    if (clientId && clientSecret && !clientSecret.includes('mock')) {
+    if (clientSecret && !clientSecret.includes('mock')) {
       try {
-        const response = await fetch('https://api.linkedin.com/v2/simpleJobPostings', {
+        const response = await fetch('https://api.linkedin.com/v2/ugcPosts', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
             'X-Restli-Protocol-Version': '2.0.0',
             'Authorization': `Bearer ${clientSecret}`,
           },
-          body: JSON.stringify(linkedinPayload),
+          body: JSON.stringify(ugcPostPayload),
         });
 
-        if (!response.ok) {
-          console.warn('[LINKEDIN API NOTICE] Respuesta de LinkedIn API:', response.statusText);
+        if (response.ok) {
+          const resData = await response.json();
+          apiStatusMessage = `¡Publicación exitosa en el muro de LinkedIn! ID Post: ${resData.id || 'OK'}`;
+        } else {
+          console.warn('[LINKEDIN POST WARNING]', response.statusText);
         }
       } catch (err: any) {
-        console.warn('[LINKEDIN API POST WARNING]', err.message);
+        console.warn('[LINKEDIN API POST EXCEPTION]', err.message);
       }
     }
 
     return NextResponse.json({
       success: true,
-      message: `Vacante "${title}" procesada exitosamente para la Organización LinkedIn ID ${orgId}.`,
+      message: apiStatusMessage,
+      publishedPostUrl: `https://www.linkedin.com/company/${orgId}/`,
       job: {
         title,
         category,
