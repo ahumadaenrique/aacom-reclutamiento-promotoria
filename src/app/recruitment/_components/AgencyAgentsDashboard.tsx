@@ -75,10 +75,27 @@ OFRECEMOS:
   const publishJobToChannels = async (channel: 'LINKEDIN' | 'OCC' | 'BOTH') => {
     setPublishing(true);
     try {
-      await new Promise((resolve) => setTimeout(resolve, 1200));
-      setPublishedSuccess(true);
-    } catch (err) {
-      alert('Error publicando vacante');
+      const res = await fetch('/api/recruitment/jobs/publish', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          title: jobPreview.title,
+          category: jobPreview.category,
+          location: jobPreview.location,
+          salary: jobPreview.salary,
+          description: jobPreview.description,
+          channel: channel,
+        }),
+      });
+
+      const data = await res.json();
+      if (data.success) {
+        setPublishedSuccess(true);
+      } else {
+        alert('Error al publicar: ' + data.error);
+      }
+    } catch (err: any) {
+      alert('Error conectando con la API de publicación');
     } finally {
       setPublishing(false);
     }
