@@ -157,7 +157,7 @@ export let mockIntegrationsDb = {
   linkedin: {
     clientId: process.env.LINKEDIN_CLIENT_ID || '78z2vrugjo5rbb',
     clientSecret: process.env.LINKEDIN_CLIENT_SECRET ? '••••••••••••••••' : 'mock_linkedin_secret_xyz',
-    organizationId: process.env.LINKEDIN_ORG_ID || 'aacom-promotoria-org',
+    organizationId: process.env.LINKEDIN_ORG_ID || '92705190',
     webhookUrl: 'https://aacom-reclutamiento-promotoria.vercel.app/api/recruitment/webhooks/linkedin',
     isEnabled: true,
   },
