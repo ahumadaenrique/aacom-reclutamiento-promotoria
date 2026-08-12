@@ -126,7 +126,7 @@ export const IntegrationsConfig: React.FC = () => {
             </span>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs">
             <div>
               <label className="block font-semibold text-slate-300 mb-1">LinkedIn Client ID</label>
               <input
@@ -150,6 +150,21 @@ export const IntegrationsConfig: React.FC = () => {
                   setIntegrations({
                     ...integrations,
                     linkedin: { ...integrations.linkedin, clientSecret: e.target.value },
+                  })
+                }
+                className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-slate-100 font-mono focus:outline-none focus:border-sky-500"
+              />
+            </div>
+            <div>
+              <label className="block font-semibold text-slate-300 mb-1">LinkedIn Organization ID (ID de Página)</label>
+              <input
+                type="text"
+                placeholder="ej: 12345678"
+                value={integrations?.linkedin?.organizationId || ''}
+                onChange={(e) =>
+                  setIntegrations({
+                    ...integrations,
+                    linkedin: { ...integrations.linkedin, organizationId: e.target.value },
                   })
                 }
                 className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-slate-100 font-mono focus:outline-none focus:border-sky-500"
