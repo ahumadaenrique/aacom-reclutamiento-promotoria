@@ -9,7 +9,12 @@ export async function POST(request: Request) {
     const linkedinConfig = mockIntegrationsDb.linkedin;
     const orgId = linkedinConfig.organizationId || '92705190';
     const clientId = linkedinConfig.clientId || '78z2vrugjo5rbb';
-    const clientSecret = linkedinConfig.clientSecret;
+    
+    // Si el frontend envía la cadena ofuscada, tomamos la llave secreta real desde las variables de Vercel
+    let clientSecret = linkedinConfig.clientSecret;
+    if (clientSecret === '••••••••••••••••' || !clientSecret) {
+      clientSecret = process.env.LINKEDIN_CLIENT_SECRET || '';
+    }
 
     console.log(`[JOB PUBLISH API] Publicando vacante "${title}" en el muro de Organización LinkedIn URN: urn:li:organization:${orgId}`);
 
