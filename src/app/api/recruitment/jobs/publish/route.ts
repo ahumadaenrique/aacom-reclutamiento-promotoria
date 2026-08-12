@@ -79,7 +79,7 @@ export async function POST(request: Request) {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            'LinkedIn-Version': '202405',
+            'LinkedIn-Version': '202607',
             'X-Restli-Protocol-Version': '2.0.0',
             'Authorization': `Bearer ${clientSecret}`,
           },
@@ -98,7 +98,7 @@ export async function POST(request: Request) {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
-              'LinkedIn-Version': '202405',
+              'LinkedIn-Version': '202607',
               'X-Restli-Protocol-Version': '2.0.0',
               'Authorization': `Bearer ${clientSecret}`,
             },
