@@ -51,6 +51,16 @@ export async function POST(request: Request) {
 
     if (clientSecret && !clientSecret.includes('mock')) {
       try {
+        const aclRes = await fetch('https://api.linkedin.com/v2/organizationAcls?q=roleAssignee', {
+          headers: {
+            'Authorization': `Bearer ${clientSecret}`,
+            'X-Restli-Protocol-Version': '2.0.0',
+          }
+        });
+        const aclData = await aclRes.json();
+        const isAdmin = aclData?.elements?.some((acl: any) => acl.organization.includes(orgId.trim()));
+        let debugMsg = isAdmin ? 'Eres Admin de la página.' : 'NO eres Admin de la página o falta permiso r_organization_admin.';
+
         const response = await fetch('https://api.linkedin.com/v2/ugcPosts', {
           method: 'POST',
           headers: {
@@ -67,7 +77,7 @@ export async function POST(request: Request) {
         } else {
           const errData = await response.text();
           console.error('[LINKEDIN POST ERROR]', errData);
-          return NextResponse.json({ success: false, error: `Error de LinkedIn API: ${response.status} - ${errData}` }, { status: 400 });
+          return NextResponse.json({ success: false, error: `API Error (ACL Diagnóstico: ${debugMsg}) | Detalles: ${response.status} - ${errData} | Roles de LinkedIn: ${JSON.stringify(aclData)}` }, { status: 400 });
         }
       } catch (err: any) {
         console.error('[LINKEDIN API POST EXCEPTION]', err.message);
