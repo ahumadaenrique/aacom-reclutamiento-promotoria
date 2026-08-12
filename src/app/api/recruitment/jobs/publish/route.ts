@@ -64,12 +64,19 @@ export async function POST(request: Request) {
         // Payload oficial v2 (REST Posts API)
         const postsPayload = {
           author: `urn:li:organization:${orgId.trim()}`,
-          commentary: `💼 ¡CONVOCATORIA ABIERTA! ${title}\n\n${description}\n\n📍 Ubicación: ${location}\n\n🌐 Postúlate directamente en nuestro Portal de Reclutamiento AACOM:\nhttps://aacom-reclutamiento-promotoria.vercel.app/recruitment/apply\n\n#ReclutamientoAACOM #SociosComerciales #VacanteComercial #BancaPatrimonial`,
+          commentary: `💼 ¡CONVOCATORIA ABIERTA! ${title}\n\n${description}\n\n📍 Ubicación: ${location}\n\n#ReclutamientoAACOM #SociosComerciales #VacanteComercial #BancaPatrimonial`,
           visibility: 'PUBLIC',
           distribution: {
             feedDistribution: 'MAIN_FEED',
             targetEntities: [],
             thirdPartyDistributionChannels: []
+          },
+          content: {
+            article: {
+              source: 'https://aacom-reclutamiento-promotoria.vercel.app/recruitment/apply',
+              title: title,
+              description: 'Promotoría AACOM - Programa de Desarrollo de Socios Comerciales & Consultores Patrimoniales'
+            }
           },
           lifecycleState: 'PUBLISHED',
           isReshareDisabledByAuthor: false
@@ -86,33 +93,9 @@ export async function POST(request: Request) {
           body: JSON.stringify(postsPayload),
         });
 
-        let usedFallback = false;
-
-        // Si falla con la empresa, intentar hacer fallback al perfil personal del usuario
-        if (!response.ok && aclData?.elements?.length > 0) {
-          const personUrn = aclData.elements[0].roleAssignee;
-          console.warn(`[LINKEDIN] Falló post a org, intentando fallback a perfil personal: ${personUrn}`);
-          postsPayload.author = personUrn;
-          
-          response = await fetch('https://api.linkedin.com/rest/posts', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'LinkedIn-Version': '202607',
-              'X-Restli-Protocol-Version': '2.0.0',
-              'Authorization': `Bearer ${clientSecret}`,
-            },
-            body: JSON.stringify(postsPayload),
-          });
-          usedFallback = true;
-        }
-
         if (response.ok || response.status === 201) {
-          // En /rest/posts a veces no regresa body, el ID viene en el header x-restli-id
           const postId = response.headers.get('x-restli-id') || 'OK';
-          const msg = usedFallback 
-            ? `¡Publicado exitosamente! (En tu Muro Personal porque el Token no tenía permisos de Empresa). ID: ${postId}`
-            : `¡Publicación exitosa en el muro de tu EMPRESA LinkedIn! ID Post: ${postId}`;
+          const msg = `¡Publicación exitosa en el muro de tu EMPRESA LinkedIn! ID Post: ${postId}`;
             
           return NextResponse.json({
             success: true,
