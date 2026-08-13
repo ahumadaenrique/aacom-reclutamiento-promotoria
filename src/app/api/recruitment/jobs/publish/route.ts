@@ -93,9 +93,33 @@ export async function POST(request: Request) {
           body: JSON.stringify(postsPayload),
         });
 
+        let usedFallback = false;
+
+        // PLAN B (Temporal): Si falla con la empresa por falta de permisos, hacer fallback al perfil personal con formato profesional
+        if (!response.ok && aclData?.elements?.length > 0) {
+          const personUrn = aclData.elements[0].roleAssignee;
+          console.warn(`[LINKEDIN] Falló post a org, intentando fallback a perfil personal: ${personUrn}`);
+          
+          postsPayload.author = personUrn;
+          
+          response = await fetch('https://api.linkedin.com/rest/posts', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'LinkedIn-Version': '202607',
+              'X-Restli-Protocol-Version': '2.0.0',
+              'Authorization': `Bearer ${clientSecret}`,
+            },
+            body: JSON.stringify(postsPayload),
+          });
+          usedFallback = true;
+        }
+
         if (response.ok || response.status === 201) {
           const postId = response.headers.get('x-restli-id') || 'OK';
-          const msg = `¡Publicación exitosa en el muro de tu EMPRESA LinkedIn! ID Post: ${postId}`;
+          const msg = usedFallback 
+            ? `¡Publicado exitosamente! (En el Muro Personal del Director porque LinkedIn está revisando los permisos de Empresa). ID: ${postId}`
+            : `¡Publicación exitosa en el muro de tu EMPRESA LinkedIn! ID Post: ${postId}`;
             
           return NextResponse.json({
             success: true,
