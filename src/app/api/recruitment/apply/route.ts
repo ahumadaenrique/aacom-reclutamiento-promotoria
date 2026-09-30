@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { evaluateCandidate } from '@/lib/recruitment/evaluatorEngine';
-import { analyzeCandidateWithGemini } from '@/lib/recruitment/geminiService';
+import { analyzeCandidateWithHermes } from '@/lib/recruitment/hermesService';
 import { sendCandidateNotificationSMS } from '@/lib/recruitment/twilioService';
 import { mockCandidatesDb } from '@/lib/recruitment/mockDb';
 
@@ -33,8 +33,8 @@ export async function POST(request: Request) {
       notes: body.notes || '',
     });
 
-    // 2. Evaluación Cualitativa 360° con Gemini AI Lector de CV
-    const geminiResult = await analyzeCandidateWithGemini({
+    // 2. Evaluación Cualitativa 360° con Hermes 3 (Nous Research)
+    const hermesResult = await analyzeCandidateWithHermes({
       candidateName: body.fullName,
       background: body.background || 'Otra Industria Comercial',
       hasCar: Boolean(body.hasCar),
@@ -67,13 +67,14 @@ export async function POST(request: Request) {
       status: evaluation.status,
       reviewStatus: evaluation.reviewStatus,
       manualReviewReason: evaluation.manualReviewReason,
-      aiAnalysis: geminiResult.summary,
-      fitAssessment: geminiResult.fitAssessment,
-      pillarScores: geminiResult.pillarScores,
-      strengths: geminiResult.strengths,
-      riskAlerts: geminiResult.riskAlerts,
-      recommendedInterviewQuestions: geminiResult.recommendedInterviewQuestions,
-      cvHighlights: geminiResult.cvHighlights,
+      aiAnalysis: hermesResult.summary,
+      fitAssessment: hermesResult.fitAssessment,
+      pillarScores: hermesResult.pillarScores,
+      strengths: hermesResult.strengths,
+      riskAlerts: hermesResult.riskAlerts,
+      recommendedInterviewQuestions: hermesResult.recommendedInterviewQuestions,
+      cvHighlights: hermesResult.cvHighlights,
+      engineUsed: hermesResult.engineUsed,
       createdAt: new Date().toISOString(),
     };
 

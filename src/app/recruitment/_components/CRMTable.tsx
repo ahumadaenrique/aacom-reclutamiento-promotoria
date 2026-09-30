@@ -555,7 +555,7 @@ export const CRMTable: React.FC = () => {
               {/* Resumen Ejecutivo 360° */}
               <div className="bg-slate-900/90 p-6 rounded-2xl border border-slate-800 space-y-4 shadow-xl backdrop-blur-xl">
                 <span className="font-bold text-sky-400 flex items-center gap-2 text-base">
-                  <Sparkles className="h-5 w-5 text-sky-400" /> Diagnóstico Ejecutivo 360° del Lector de CV (Gemini AI)
+                  <Sparkles className="h-5 w-5 text-sky-400" /> Diagnóstico Ejecutivo 360° (Hermes 3 Engine)
                 </span>
                 <p className="text-sm text-slate-300 leading-relaxed font-normal">{selectedCandidate.aiAnalysis}</p>
                 {selectedCandidate.fitAssessment && (

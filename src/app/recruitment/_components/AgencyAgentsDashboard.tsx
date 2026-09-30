@@ -244,7 +244,7 @@ OFRECEMOS:
           <div className="bg-slate-950 p-4 rounded-xl border border-slate-800">
             <span className="text-slate-400 block text-[11px]">Motor de IA Generativa</span>
             <span className="font-extrabold text-lg text-purple-400 flex items-center gap-1.5 mt-0.5">
-              <Layers className="h-4 w-4" /> Gemini 3.6 Flash (High)
+              <Layers className="h-4 w-4" /> Hermes 3 (70B Engine)
             </span>
           </div>
         </div>
